@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :batch-module:compileJava:*)",
+      "Bash(./gradlew :batch-module:test:*)",
+      "Bash(./gradlew :config-module:test:*)",
+      "Bash(./gradlew:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

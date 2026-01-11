@@ -1,0 +1,124 @@
+# Test configuration for rule engine tests
+version: "1.0.0"
+description: "AML Watchlist Filtering Rules - Test"
+
+rules:
+  - id: EXACT_NAME_MATCH
+    name: "정확한 이름 일치"
+    type: NAME
+    description: "정규화 후 이름이 정확히 일치"
+    enabled: true
+    priority: 1
+    condition:
+      matchType: EXACT
+      sourceField: name
+      targetField: name
+    score:
+      exactMatch: 100.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 100.0
+
+  - id: FUZZY_NAME_MATCH
+    name: "유사 이름 매칭"
+    type: NAME
+    description: "이름 유사도 기반 매칭"
+    enabled: true
+    priority: 2
+    condition:
+      matchType: FUZZY
+      sourceField: name
+      targetField: name
+      parameters:
+        similarityThreshold: 0.8
+    score:
+      exactMatch: 0.0
+      partialMatch: 64.0
+      proportionalToSimilarity: true
+      maxScore: 80.0
+
+  - id: EXACT_ALIAS_MATCH
+    name: "정확한 별칭 일치"
+    type: ALIAS
+    description: "이름이 감시목록 별칭과 정확히 일치"
+    enabled: true
+    priority: 3
+    condition:
+      matchType: EXACT
+      sourceField: name
+      targetField: aliases
+    score:
+      exactMatch: 90.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 90.0
+
+  - id: FUZZY_ALIAS_MATCH
+    name: "유사 별칭 매칭"
+    type: ALIAS
+    description: "이름과 별칭의 유사도 기반 매칭"
+    enabled: true
+    priority: 4
+    condition:
+      matchType: FUZZY
+      sourceField: name
+      targetField: aliases
+      parameters:
+        similarityThreshold: 0.85
+    score:
+      exactMatch: 0.0
+      partialMatch: 63.75
+      proportionalToSimilarity: true
+      maxScore: 75.0
+
+  - id: DOB_MATCH
+    name: "생년월일 일치"
+    type: DOB
+    description: "생년월일이 일치하거나 근사"
+    enabled: true
+    priority: 5
+    condition:
+      matchType: DATE_RANGE
+      sourceField: dateOfBirth
+      targetField: dateOfBirth
+      parameters:
+        rangeDays: 365
+    score:
+      exactMatch: 50.0
+      partialMatch: 15.0
+      proportionalToSimilarity: true
+      maxScore: 30.0
+
+  - id: NATIONALITY_MATCH
+    name: "국적 일치"
+    type: NATIONALITY
+    description: "국적이 일치"
+    enabled: true
+    priority: 6
+    condition:
+      matchType: EXACT
+      sourceField: nationality
+      targetField: nationality
+    score:
+      exactMatch: 30.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 30.0
+
+  - id: PARTIAL_NAME_MATCH
+    name: "부분 이름 매칭"
+    type: NAME
+    description: "이름의 일부 단어가 포함됨"
+    enabled: false
+    priority: 10
+    condition:
+      matchType: CONTAINS
+      sourceField: name
+      targetField: name
+      parameters:
+        allWords: true
+    score:
+      exactMatch: 0.0
+      partialMatch: 40.0
+      proportionalToSimilarity: false
+      maxScore: 40.0

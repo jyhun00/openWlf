@@ -1,0 +1,304 @@
+# ============================================================
+# Watchlist Filtering Rules Configuration
+# ============================================================
+# 이 파일을 수정하여 룰을 동적으로 변경할 수 있습니다.
+# 외부 파일 경로: rule.config.path=file:/path/to/filtering-rules.yml
+# ============================================================
+
+version: "1.0.0"
+description: "AML Watchlist Filtering Rules"
+
+rules:
+  # ============================================================
+  # 이름 매칭 룰
+  # ============================================================
+  
+  - id: EXACT_NAME_MATCH
+    name: "정확한 이름 일치"
+    type: NAME
+    description: "정규화 후 이름이 정확히 일치"
+    enabled: true
+    priority: 1
+    condition:
+      matchType: EXACT
+      sourceField: name
+      targetField: name
+    score:
+      exactMatch: 100.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 100.0
+
+  - id: FUZZY_NAME_MATCH
+    name: "유사 이름 매칭"
+    type: NAME
+    description: "이름 유사도 기반 매칭"
+    enabled: true
+    priority: 2
+    condition:
+      matchType: FUZZY
+      sourceField: name
+      targetField: name
+      parameters:
+        similarityThreshold: 0.8
+    score:
+      exactMatch: 0.0
+      partialMatch: 64.0
+      proportionalToSimilarity: true
+      maxScore: 80.0
+
+  # ============================================================
+  # 별칭 매칭 룰
+  # ============================================================
+  
+  - id: EXACT_ALIAS_MATCH
+    name: "정확한 별칭 일치"
+    type: ALIAS
+    description: "이름이 감시목록 별칭과 정확히 일치"
+    enabled: true
+    priority: 3
+    condition:
+      matchType: EXACT
+      sourceField: name
+      targetField: aliases
+    score:
+      exactMatch: 90.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 90.0
+
+  - id: FUZZY_ALIAS_MATCH
+    name: "유사 별칭 매칭"
+    type: ALIAS
+    description: "이름과 별칭의 유사도 기반 매칭"
+    enabled: true
+    priority: 4
+    condition:
+      matchType: FUZZY
+      sourceField: name
+      targetField: aliases
+      parameters:
+        similarityThreshold: 0.85
+    score:
+      exactMatch: 0.0
+      partialMatch: 63.75
+      proportionalToSimilarity: true
+      maxScore: 75.0
+
+  # ============================================================
+  # 생년월일 매칭 룰
+  # ============================================================
+  
+  - id: DOB_MATCH
+    name: "생년월일 일치"
+    type: DOB
+    description: "생년월일이 일치하거나 근사"
+    enabled: true
+    priority: 5
+    condition:
+      matchType: DATE_RANGE
+      sourceField: dateOfBirth
+      targetField: dateOfBirth
+      parameters:
+        rangeDays: 365
+    score:
+      exactMatch: 50.0
+      partialMatch: 15.0
+      proportionalToSimilarity: true
+      maxScore: 30.0
+
+  # ============================================================
+  # 국적 매칭 룰
+  # ============================================================
+  
+  - id: NATIONALITY_MATCH
+    name: "국적 일치"
+    type: NATIONALITY
+    description: "국적이 일치"
+    enabled: true
+    priority: 6
+    condition:
+      matchType: EXACT
+      sourceField: nationality
+      targetField: nationality
+    score:
+      exactMatch: 30.0
+      partialMatch: 0.0
+      proportionalToSimilarity: false
+      maxScore: 30.0
+
+  # ============================================================
+  # 부분 이름 매칭 룰 (선택적)
+  # ============================================================
+  
+  - id: PARTIAL_NAME_MATCH
+    name: "부분 이름 매칭"
+    type: NAME
+    description: "이름의 일부 단어가 포함됨"
+    enabled: false  # 기본 비활성화
+    priority: 10
+    condition:
+      matchType: CONTAINS
+      sourceField: name
+      targetField: name
+      parameters:
+        allWords: true
+    score:
+      exactMatch: 0.0
+      partialMatch: 40.0
+      proportionalToSimilarity: false
+      maxScore: 40.0
+
+  - id: PARTIAL_ALIAS_MATCH
+    name: "부분 별칭 매칭"
+    type: ALIAS
+    description: "별칭의 일부 단어가 포함됨"
+    enabled: false  # 기본 비활성화
+    priority: 11
+    condition:
+      matchType: CONTAINS
+      sourceField: name
+      targetField: aliases
+      parameters:
+        allWords: true
+    score:
+      exactMatch: 0.0
+      partialMatch: 35.0
+      proportionalToSimilarity: false
+      maxScore: 35.0
+
+  # ============================================================
+  # 고급 매칭 알고리즘 (Advanced Matching)
+  # ============================================================
+
+  - id: PHONETIC_NAME_MATCH
+    name: "발음 기반 이름 매칭"
+    type: NAME
+    description: "발음이 유사한 이름 감지 (Muhammad=Mohammed, Stephen=Steven)"
+    enabled: true
+    priority: 7
+    condition:
+      matchType: PHONETIC
+      sourceField: name
+      targetField: name
+      parameters:
+        algorithm: METAPHONE  # SOUNDEX, METAPHONE, BOTH
+        similarityThreshold: 0.7
+    score:
+      exactMatch: 0.0
+      partialMatch: 68.0
+      proportionalToSimilarity: true
+      maxScore: 85.0
+
+  - id: PHONETIC_ALIAS_MATCH
+    name: "발음 기반 별칭 매칭"
+    type: ALIAS
+    description: "별칭과 발음이 유사한 이름 감지"
+    enabled: true
+    priority: 8
+    condition:
+      matchType: PHONETIC
+      sourceField: name
+      targetField: aliases
+      parameters:
+        algorithm: METAPHONE
+        similarityThreshold: 0.7
+    score:
+      exactMatch: 0.0
+      partialMatch: 60.0
+      proportionalToSimilarity: true
+      maxScore: 75.0
+
+  - id: JARO_WINKLER_NAME_MATCH
+    name: "Jaro-Winkler 이름 매칭"
+    type: NAME
+    description: "Jaro-Winkler 알고리즘 기반 이름 유사도 (오타에 강함)"
+    enabled: true
+    priority: 9
+    condition:
+      matchType: JARO_WINKLER
+      sourceField: name
+      targetField: name
+      parameters:
+        similarityThreshold: 0.85
+        tokenMatching: true  # 이름 순서 무관 매칭
+    score:
+      exactMatch: 0.0
+      partialMatch: 68.0
+      proportionalToSimilarity: true
+      maxScore: 80.0
+
+  - id: NGRAM_NAME_MATCH
+    name: "N-Gram 이름 매칭"
+    type: NAME
+    description: "N-Gram 기반 부분 문자열 매칭 (철자 변형에 강함)"
+    enabled: false  # 필요시 활성화
+    priority: 12
+    condition:
+      matchType: NGRAM
+      sourceField: name
+      targetField: name
+      parameters:
+        ngramSize: 2  # Bigram (2) or Trigram (3)
+        similarityThreshold: 0.6
+    score:
+      exactMatch: 0.0
+      partialMatch: 48.0
+      proportionalToSimilarity: true
+      maxScore: 60.0
+
+  - id: KOREAN_NAME_MATCH
+    name: "한글 이름 매칭"
+    type: NAME
+    description: "한글 이름 초성/자모 기반 매칭"
+    enabled: true
+    priority: 13
+    condition:
+      matchType: KOREAN
+      sourceField: name
+      targetField: name
+      parameters:
+        similarityThreshold: 0.7
+        chosungOnly: false  # true면 초성만 비교
+    score:
+      exactMatch: 0.0
+      partialMatch: 56.0
+      proportionalToSimilarity: true
+      maxScore: 70.0
+
+  - id: KOREAN_ALIAS_MATCH
+    name: "한글 별칭 매칭"
+    type: ALIAS
+    description: "한글 별칭 초성/자모 기반 매칭"
+    enabled: true
+    priority: 14
+    condition:
+      matchType: KOREAN
+      sourceField: name
+      targetField: aliases
+      parameters:
+        similarityThreshold: 0.7
+        chosungOnly: false
+    score:
+      exactMatch: 0.0
+      partialMatch: 52.0
+      proportionalToSimilarity: true
+      maxScore: 65.0
+
+  - id: COMPOSITE_NAME_MATCH
+    name: "복합 알고리즘 이름 매칭"
+    type: NAME
+    description: "여러 알고리즘 종합 (JW+Metaphone+N-gram+Korean)"
+    enabled: false  # 고급 매칭 필요시 활성화
+    priority: 15
+    condition:
+      matchType: COMPOSITE
+      sourceField: name
+      targetField: name
+      parameters:
+        similarityThreshold: 0.75
+    score:
+      exactMatch: 0.0
+      partialMatch: 67.5
+      proportionalToSimilarity: true
+      maxScore: 90.0

@@ -1,0 +1,90 @@
+spring:
+  application:
+    name: openWLF
+
+  datasource:
+    url: jdbc:h2:mem:watchlistdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    mapping-resources:
+    packages-to-scan: aml.openwlf.data.entity
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+    time-zone: Asia/Seoul
+
+  # Spring Batch
+  batch:
+    jdbc:
+      initialize-schema: always
+
+server:
+  port: 8080
+
+# Watchlist configuration
+watchlist:
+  threshold:
+    alert: 70.0           # Alert threshold (block transaction)
+    review: 50.0          # Review threshold (manual review required)
+    alert-generation: 50.0  # Alert generation threshold
+
+# Rule configuration
+rule:
+  config:
+    # 클래스패스 내 파일: classpath:rules/filtering-rules.yml
+    # 외부 파일: file:/path/to/filtering-rules.yml
+    path: classpath:rules/filtering-rules.yml
+    # 외부 파일 변경 감지 (file: 경로만 지원)
+    watch-for-changes: false
+
+# Sanctions list download settings
+sanctions:
+  download:
+    ofac-url: https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.XML
+    un-url: https://scsanctions.un.org/resources/xml/en/consolidated.xml
+    download-timeout-ms: 300000
+    max-retries: 3
+    retry-delay-ms: 5000
+    batch-size: 500
+  sync:
+    cron: "0 0 2 * * *"
+
+# Cache settings
+cache:
+  refresh:
+    enabled: true
+    cron: "0 0 2 * * ?"
+  status-log:
+    cron: "0 0 * * * ?"
+
+# Logging
+logging:
+  level:
+    aml.openwlf: DEBUG
+    aml.openwlf.api.scheduler: INFO
+    aml.openwlf.batch: INFO
+    org.springframework.web: INFO
+    org.springframework.scheduling: INFO
+    org.hibernate: INFO
+
+# Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method

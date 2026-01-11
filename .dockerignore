@@ -1,0 +1,26 @@
+# Build artifacts
+**/build/
+**/target/
+**/.gradle/
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.iws
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+**/*.log
