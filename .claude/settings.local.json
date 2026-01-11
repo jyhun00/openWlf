@@ -5,7 +5,8 @@
       "Bash(./gradlew :batch-module:test:*)",
       "Bash(./gradlew :config-module:test:*)",
       "Bash(./gradlew:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: OpenWLF - Open Watchlist Filtering System\n\n- Multi-module Gradle project structure \\(api, batch, config, core, data\\)\n- Watchlist filtering with multiple matching algorithms \\(exact, fuzzy, phonetic, n-gram, Korean name\\)\n- Sanctions list parsers for OFAC, UN, and EU\n- Alert and Case management system\n- REST APIs with Swagger documentation\n- Docker support with docker-compose\n- CI/CD pipeline with GitHub Actions\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
