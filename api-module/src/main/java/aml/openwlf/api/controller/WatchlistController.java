@@ -5,6 +5,7 @@ import aml.openwlf.data.entity.WatchlistEntryEntity;
 import aml.openwlf.data.service.WatchlistDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,11 +40,13 @@ public class WatchlistController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Successfully retrieved watchlist entries"
+                    description = "Successfully retrieved watchlist entries",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = WatchlistEntryDto.class)))
             ),
             @ApiResponse(
                     responseCode = "500",
-                    description = "Internal server error"
+                    description = "Internal server error",
+                    content = @Content
             )
     })
     public ResponseEntity<Page<WatchlistEntryDto>> getAllEntries(
@@ -114,11 +117,12 @@ public class WatchlistController {
     @GetMapping("/stats")
     @Operation(
             summary = "Get watchlist statistics",
-            description = "Retrieves statistics about watchlist entries including cache info"
+            description = "Retrieves statistics about watchlist entries including total count, active count, and source breakdown"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved statistics"
+            description = "Successfully retrieved statistics",
+            content = @Content(schema = @Schema(implementation = WatchlistDataService.WatchlistStats.class))
     )
     public ResponseEntity<WatchlistDataService.WatchlistStats> getStatistics() {
         log.info("Fetching watchlist statistics");
@@ -128,11 +132,12 @@ public class WatchlistController {
     @GetMapping("/cache/stats")
     @Operation(
             summary = "Get cache statistics",
-            description = "Retrieves information about the in-memory watchlist cache"
+            description = "Retrieves information about the in-memory watchlist cache including entry count, memory usage, and last refresh time"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Successfully retrieved cache statistics"
+            description = "Successfully retrieved cache statistics",
+            content = @Content(schema = @Schema(implementation = WatchlistDataService.CacheStats.class))
     )
     public ResponseEntity<WatchlistDataService.CacheStats> getCacheStats() {
         log.info("Fetching cache statistics");
