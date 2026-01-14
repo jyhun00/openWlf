@@ -4,6 +4,10 @@ import aml.openwlf.config.rule.RuleConfiguration;
 import aml.openwlf.config.rule.RuleDefinition;
 import aml.openwlf.core.rule.RuleEngine;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,9 +34,10 @@ public class RuleController {
     @GetMapping
     @Operation(
             summary = "전체 룰 설정 조회",
-            description = "현재 로드된 전체 룰 설정을 반환합니다."
+            description = "현재 로드된 전체 룰 설정을 반환합니다. 버전, 설명, 모든 룰 정의를 포함합니다."
     )
-    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = RuleConfiguration.class)))
     public ResponseEntity<RuleConfiguration> getConfiguration() {
         log.info("Fetching current rule configuration");
         return ResponseEntity.ok(ruleEngine.getCurrentConfiguration());
@@ -41,9 +46,10 @@ public class RuleController {
     @GetMapping("/enabled")
     @Operation(
             summary = "활성화된 룰 목록 조회",
-            description = "현재 활성화된 룰만 우선순위 순으로 반환합니다."
+            description = "현재 활성화된 룰만 우선순위 순으로 반환합니다. 비활성화된 룰은 제외됩니다."
     )
-    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RuleDefinition.class))))
     public ResponseEntity<List<RuleDefinition>> getEnabledRules() {
         log.info("Fetching enabled rules");
         List<RuleDefinition> enabledRules = ruleEngine.getCurrentConfiguration().getEnabledRules();
@@ -53,13 +59,17 @@ public class RuleController {
     @GetMapping("/{ruleId}")
     @Operation(
             summary = "특정 룰 조회",
-            description = "ID로 특정 룰 설정을 조회합니다."
+            description = "ID로 특정 룰 설정을 조회합니다. 룰의 조건, 가중치, 활성화 상태 등을 반환합니다."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "404", description = "룰을 찾을 수 없음")
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = RuleDefinition.class))),
+            @ApiResponse(responseCode = "404", description = "룰을 찾을 수 없음",
+                    content = @Content)
     })
-    public ResponseEntity<RuleDefinition> getRuleById(@PathVariable String ruleId) {
+    public ResponseEntity<RuleDefinition> getRuleById(
+            @Parameter(description = "룰 ID", required = true, example = "EXACT_NAME_MATCH")
+            @PathVariable String ruleId) {
         log.info("Fetching rule: {}", ruleId);
         RuleDefinition rule = ruleEngine.getCurrentConfiguration().findRuleById(ruleId);
         
@@ -72,11 +82,11 @@ public class RuleController {
     @PostMapping("/reload")
     @Operation(
             summary = "룰 설정 리로드",
-            description = "외부 설정 파일에서 룰을 다시 로드합니다."
+            description = "외부 설정 파일(filtering-rules.yml)에서 룰을 다시 로드합니다. 운영 중 룰 변경 시 사용합니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "리로드 성공"),
-            @ApiResponse(responseCode = "500", description = "리로드 실패")
+            @ApiResponse(responseCode = "500", description = "리로드 실패 - 설정 파일 오류 또는 파싱 실패")
     })
     public ResponseEntity<Map<String, Object>> reloadConfiguration() {
         log.info("Reloading rule configuration");
