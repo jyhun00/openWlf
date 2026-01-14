@@ -34,7 +34,8 @@ sanctions:
   download:
     ofac-url: https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.XML
     un-url: https://scsanctions.un.org/resources/xml/en/consolidated.xml
-    eu-url: https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw
+    eu-url: https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content
+    eu-token: ${SANCTIONS_EU_TOKEN:}  # 환경변수로 설정 (예: export SANCTIONS_EU_TOKEN=your-token)
     download-timeout-ms: 300000
     max-retries: 3
     retry-delay-ms: 5000

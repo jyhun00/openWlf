@@ -61,7 +61,7 @@ public class SanctionsDownloadService {
      * EU Consolidated Financial Sanctions List XML 다운로드 (byte[])
      */
     public byte[] downloadEuXmlAsBytes() {
-        return downloadWithRetry(properties.getEuUrl(), "EU");
+        return downloadWithRetry(properties.getEuFullUrl(), "EU");
     }
 
     private byte[] downloadWithRetry(String url, String source) {

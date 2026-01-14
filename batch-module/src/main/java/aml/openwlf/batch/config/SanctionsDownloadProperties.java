@@ -23,9 +23,24 @@ public class SanctionsDownloadProperties {
     private String unUrl = "https://scsanctions.un.org/resources/xml/en/consolidated.xml";
 
     /**
-     * EU Consolidated Financial Sanctions List XML URL
+     * EU Consolidated Financial Sanctions List XML Base URL
      */
-    private String euUrl = "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw";
+    private String euUrl = "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content";
+
+    /**
+     * EU Sanctions List API Token (환경변수 SANCTIONS_EU_TOKEN으로 설정 권장)
+     */
+    private String euToken = "";
+
+    /**
+     * EU 전체 URL 반환 (base URL + token)
+     */
+    public String getEuFullUrl() {
+        if (euToken == null || euToken.isBlank()) {
+            return euUrl;
+        }
+        return euUrl + "?token=" + euToken;
+    }
 
     /**
      * 다운로드 타임아웃 (밀리초)
