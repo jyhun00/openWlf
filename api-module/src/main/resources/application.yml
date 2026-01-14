@@ -35,6 +35,19 @@ spring:
 server:
   port: 8080
 
+# Matching algorithm weights configuration
+matching:
+  weights:
+    with-korean:           # 한글 이름 포함 시 가중치
+      jaro-winkler: 0.3
+      metaphone: 0.2
+      ngram: 0.2
+      korean: 0.3
+    without-korean:        # 영문만 있는 경우 가중치
+      jaro-winkler: 0.4
+      metaphone: 0.3
+      ngram: 0.3
+
 # Watchlist configuration
 watchlist:
   threshold:

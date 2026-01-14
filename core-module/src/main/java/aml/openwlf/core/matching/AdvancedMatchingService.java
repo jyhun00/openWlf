@@ -28,6 +28,7 @@ public class AdvancedMatchingService {
     private final JaroWinklerMatchingStrategy jaroWinklerStrategy;
     private final NGramMatchingStrategy ngramStrategy;
     private final KoreanNameMatchingStrategy koreanStrategy;
+    private final MatchingWeightProperties weightProperties;
 
     // ==================== Soundex ====================
 
@@ -160,10 +161,16 @@ public class AdvancedMatchingService {
         // 가중 평균 (한글이 있으면 한글 점수 반영)
         double compositeScore;
         if (koreanScore > 0) {
-            compositeScore = (jaroWinklerScore * 0.3 + metaphoneScore * 0.2 +
-                    ngramScore * 0.2 + koreanScore * 0.3);
+            var w = weightProperties.getWithKorean();
+            compositeScore = (jaroWinklerScore * w.getJaroWinkler() +
+                    metaphoneScore * w.getMetaphone() +
+                    ngramScore * w.getNgram() +
+                    koreanScore * w.getKorean());
         } else {
-            compositeScore = (jaroWinklerScore * 0.4 + metaphoneScore * 0.3 + ngramScore * 0.3);
+            var w = weightProperties.getWithoutKorean();
+            compositeScore = (jaroWinklerScore * w.getJaroWinkler() +
+                    metaphoneScore * w.getMetaphone() +
+                    ngramScore * w.getNgram());
         }
 
         return new CompositeMatchResult(

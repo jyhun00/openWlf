@@ -21,13 +21,15 @@ class AdvancedMatchingServiceTest {
         JaroWinklerMatchingStrategy jaroWinklerStrategy = new JaroWinklerMatchingStrategy();
         NGramMatchingStrategy ngramStrategy = new NGramMatchingStrategy();
         KoreanNameMatchingStrategy koreanStrategy = new KoreanNameMatchingStrategy();
+        MatchingWeightProperties weightProperties = new MatchingWeightProperties();
 
         matchingService = new AdvancedMatchingService(
                 soundexStrategy,
                 metaphoneStrategy,
                 jaroWinklerStrategy,
                 ngramStrategy,
-                koreanStrategy
+                koreanStrategy,
+                weightProperties
         );
     }
 

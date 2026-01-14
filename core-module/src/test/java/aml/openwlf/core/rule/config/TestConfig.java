@@ -2,6 +2,7 @@ package aml.openwlf.core.rule.config;
 
 import aml.openwlf.config.rule.RuleConfigurationLoader;
 import aml.openwlf.core.matching.AdvancedMatchingService;
+import aml.openwlf.core.matching.MatchingWeightProperties;
 import aml.openwlf.core.matching.strategy.*;
 import aml.openwlf.core.normalization.NormalizationService;
 import aml.openwlf.core.rule.RuleEngine;
@@ -61,18 +62,25 @@ public class TestConfig {
     }
 
     @Bean
+    public MatchingWeightProperties matchingWeightProperties() {
+        return new MatchingWeightProperties();
+    }
+
+    @Bean
     public AdvancedMatchingService advancedMatchingService(
             SoundexMatchingStrategy soundexStrategy,
             MetaphoneMatchingStrategy metaphoneStrategy,
             JaroWinklerMatchingStrategy jaroWinklerStrategy,
             NGramMatchingStrategy ngramStrategy,
-            KoreanNameMatchingStrategy koreanStrategy) {
+            KoreanNameMatchingStrategy koreanStrategy,
+            MatchingWeightProperties weightProperties) {
         return new AdvancedMatchingService(
                 soundexStrategy,
                 metaphoneStrategy,
                 jaroWinklerStrategy,
                 ngramStrategy,
-                koreanStrategy
+                koreanStrategy,
+                weightProperties
         );
     }
 
