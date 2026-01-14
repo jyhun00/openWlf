@@ -5,6 +5,8 @@ import aml.openwlf.data.entity.EntityAddressEntity;
 import aml.openwlf.data.entity.EntityDocumentEntity;
 import aml.openwlf.data.entity.EntityNameEntity;
 import aml.openwlf.data.entity.SanctionsEntity;
+import aml.openwlf.data.entity.SanctionsSyncHistoryEntity;
+import aml.openwlf.data.repository.SanctionsSyncHistoryRepository;
 import aml.openwlf.data.service.SanctionsQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,8 +38,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Tag(name = "Sanctions (v2)", description = "제재 대상 조회 API (비정규화 스키마)")
 public class SanctionsController {
-    
+
     private final SanctionsQueryService queryService;
+    private final SanctionsSyncHistoryRepository syncHistoryRepository;
     
     // ========================================
     // 목록 조회
@@ -187,7 +190,7 @@ public class SanctionsController {
                 .totalNames(stats.getTotalNames())
                 .totalAddresses(stats.getTotalAddresses())
                 .totalDocuments(stats.getTotalDocuments())
-                .lastDataUpdate(LocalDateTime.now()) // TODO: 실제 마지막 업데이트 시간으로 대체
+                .lastDataUpdate(getLastSuccessfulSyncTime())
                 .build();
         
         return ResponseEntity.ok(dto);
@@ -288,5 +291,16 @@ public class SanctionsController {
                         .issuingAuthority(d.getIssuingAuthority())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 마지막 성공적인 동기화 시간 조회
+     */
+    private LocalDateTime getLastSuccessfulSyncTime() {
+        return syncHistoryRepository.findLatestByEachSource().stream()
+                .filter(h -> h.getStatus() == SanctionsSyncHistoryEntity.SyncStatus.SUCCESS)
+                .map(SanctionsSyncHistoryEntity::getFinishedAt)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
     }
 }
