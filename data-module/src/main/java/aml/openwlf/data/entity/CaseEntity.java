@@ -1,10 +1,7 @@
 package aml.openwlf.data.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,9 +10,11 @@ import java.util.List;
 
 /**
  * Case Entity - Alert에서 전환된 조사 케이스
- * 
+ *
  * Alert는 시스템이 자동 생성하고, Case는 분석가가 상세 조사를 위해 생성합니다.
  * 하나의 Case에 여러 Alert가 연결될 수 있습니다.
+ *
+ * BaseEntity를 확장하여 JPA Auditing으로 createdAt/updatedAt 자동 관리
  */
 @Entity
 @Table(name = "cases", indexes = {
@@ -26,11 +25,12 @@ import java.util.List;
         @Index(name = "idx_case_created_at", columnList = "created_at"),
         @Index(name = "idx_case_customer_id", columnList = "customer_id")
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseEntity {
+public class CaseEntity extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -165,19 +165,7 @@ public class CaseEntity {
      */
     @Column(name = "created_by", length = 100)
     private String createdBy;
-    
-    /**
-     * 생성일시
-     */
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    /**
-     * 수정일시
-     */
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
+
     /**
      * 연결된 Alert 목록
      */
@@ -203,8 +191,6 @@ public class CaseEntity {
     
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
         if (status == null) {
             status = CaseStatus.OPEN;
         }
@@ -214,11 +200,6 @@ public class CaseEntity {
         if (sarFiled == null) {
             sarFiled = false;
         }
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
     
     /**

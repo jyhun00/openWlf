@@ -17,14 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("FuzzyMatchEvaluator 테스트")
 class FuzzyMatchEvaluatorTest {
-    
+
     private FuzzyMatchEvaluator evaluator;
     private NormalizationService normalizationService;
-    
+    private FieldValueExtractor fieldExtractor;
+
     @BeforeEach
     void setUp() {
         normalizationService = new NormalizationService();
-        evaluator = new FuzzyMatchEvaluator(normalizationService);
+        fieldExtractor = new FieldValueExtractor();
+        evaluator = new FuzzyMatchEvaluator(fieldExtractor, normalizationService);
     }
     
     @Test

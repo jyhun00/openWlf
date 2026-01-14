@@ -22,14 +22,18 @@ import java.util.UUID;
 
 /**
  * Service for managing alerts
+ *
+ * Alert 생성, 조회, 상태 변경 등 핵심 기능을 담당합니다.
+ * 통계 관련 기능은 AlertStatisticsService에 위임합니다.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlertService {
-    
+
     private final AlertRepository alertRepository;
     private final ObjectMapper objectMapper;
+    private final AlertStatisticsService alertStatisticsService;
     
     @Value("${watchlist.threshold.alert-generation:50.0}")
     private double alertGenerationThreshold;
@@ -191,30 +195,12 @@ public class AlertService {
     
     /**
      * Get alert statistics
+     *
+     * @deprecated Use {@link AlertStatisticsService#getStatistics()} directly for better SRP compliance
      */
     @Transactional(readOnly = true)
-    public AlertStats getStatistics() {
-        long total = alertRepository.count();
-        long newCount = alertRepository.countByStatus(AlertStatus.NEW);
-        long inReviewCount = alertRepository.countByStatus(AlertStatus.IN_REVIEW);
-        long escalatedCount = alertRepository.countByStatus(AlertStatus.ESCALATED);
-        long confirmedCount = alertRepository.countByStatus(AlertStatus.CONFIRMED);
-        long falsePositiveCount = alertRepository.countByStatus(AlertStatus.FALSE_POSITIVE);
-        long closedCount = alertRepository.countByStatus(AlertStatus.CLOSED);
-        long todayCount = alertRepository.countAlertsSince(
-                LocalDateTime.now().toLocalDate().atStartOfDay());
-        
-        return AlertStats.builder()
-                .totalAlerts(total)
-                .newAlerts(newCount)
-                .inReviewAlerts(inReviewCount)
-                .escalatedAlerts(escalatedCount)
-                .confirmedAlerts(confirmedCount)
-                .falsePositiveAlerts(falsePositiveCount)
-                .closedAlerts(closedCount)
-                .alertsToday(todayCount)
-                .openAlerts(newCount + inReviewCount + escalatedCount)
-                .build();
+    public AlertStatisticsService.AlertStats getStatistics() {
+        return alertStatisticsService.getStatistics();
     }
     
     /**
@@ -236,21 +222,5 @@ public class AlertService {
             log.error("Failed to serialize matched rules", e);
             return "[]";
         }
-    }
-    
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    public static class AlertStats {
-        private long totalAlerts;
-        private long newAlerts;
-        private long inReviewAlerts;
-        private long escalatedAlerts;
-        private long confirmedAlerts;
-        private long falsePositiveAlerts;
-        private long closedAlerts;
-        private long alertsToday;
-        private long openAlerts;
     }
 }

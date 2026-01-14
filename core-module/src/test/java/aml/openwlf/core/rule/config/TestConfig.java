@@ -1,6 +1,8 @@
 package aml.openwlf.core.rule.config;
 
 import aml.openwlf.config.rule.RuleConfigurationLoader;
+import aml.openwlf.core.matching.AdvancedMatchingService;
+import aml.openwlf.core.matching.strategy.*;
 import aml.openwlf.core.normalization.NormalizationService;
 import aml.openwlf.core.rule.RuleEngine;
 import aml.openwlf.core.rule.evaluator.*;
@@ -28,23 +30,74 @@ public class TestConfig {
     }
 
     @Bean
-    public ExactMatchEvaluator exactMatchEvaluator(NormalizationService normalizationService) {
-        return new ExactMatchEvaluator(normalizationService);
+    public FieldValueExtractor fieldValueExtractor() {
+        return new FieldValueExtractor();
+    }
+
+    // Matching Strategies
+    @Bean
+    public SoundexMatchingStrategy soundexMatchingStrategy() {
+        return new SoundexMatchingStrategy();
     }
 
     @Bean
-    public FuzzyMatchEvaluator fuzzyMatchEvaluator(NormalizationService normalizationService) {
-        return new FuzzyMatchEvaluator(normalizationService);
+    public MetaphoneMatchingStrategy metaphoneMatchingStrategy() {
+        return new MetaphoneMatchingStrategy();
     }
 
     @Bean
-    public DateRangeMatchEvaluator dateRangeMatchEvaluator() {
-        return new DateRangeMatchEvaluator();
+    public JaroWinklerMatchingStrategy jaroWinklerMatchingStrategy() {
+        return new JaroWinklerMatchingStrategy();
     }
 
     @Bean
-    public ContainsMatchEvaluator containsMatchEvaluator(NormalizationService normalizationService) {
-        return new ContainsMatchEvaluator(normalizationService);
+    public NGramMatchingStrategy ngramMatchingStrategy() {
+        return new NGramMatchingStrategy();
+    }
+
+    @Bean
+    public KoreanNameMatchingStrategy koreanNameMatchingStrategy() {
+        return new KoreanNameMatchingStrategy();
+    }
+
+    @Bean
+    public AdvancedMatchingService advancedMatchingService(
+            SoundexMatchingStrategy soundexStrategy,
+            MetaphoneMatchingStrategy metaphoneStrategy,
+            JaroWinklerMatchingStrategy jaroWinklerStrategy,
+            NGramMatchingStrategy ngramStrategy,
+            KoreanNameMatchingStrategy koreanStrategy) {
+        return new AdvancedMatchingService(
+                soundexStrategy,
+                metaphoneStrategy,
+                jaroWinklerStrategy,
+                ngramStrategy,
+                koreanStrategy
+        );
+    }
+
+    // Rule Evaluators
+    @Bean
+    public ExactMatchEvaluator exactMatchEvaluator(FieldValueExtractor fieldExtractor,
+                                                   NormalizationService normalizationService) {
+        return new ExactMatchEvaluator(fieldExtractor, normalizationService);
+    }
+
+    @Bean
+    public FuzzyMatchEvaluator fuzzyMatchEvaluator(FieldValueExtractor fieldExtractor,
+                                                   NormalizationService normalizationService) {
+        return new FuzzyMatchEvaluator(fieldExtractor, normalizationService);
+    }
+
+    @Bean
+    public DateRangeMatchEvaluator dateRangeMatchEvaluator(FieldValueExtractor fieldExtractor) {
+        return new DateRangeMatchEvaluator(fieldExtractor);
+    }
+
+    @Bean
+    public ContainsMatchEvaluator containsMatchEvaluator(FieldValueExtractor fieldExtractor,
+                                                         NormalizationService normalizationService) {
+        return new ContainsMatchEvaluator(fieldExtractor, normalizationService);
     }
 
     @Bean

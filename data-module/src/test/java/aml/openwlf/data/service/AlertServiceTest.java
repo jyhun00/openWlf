@@ -361,36 +361,6 @@ class AlertServiceTest {
         }
     }
     
-    @Nested
-    @DisplayName("Alert 통계 테스트")
-    class AlertStatisticsTest {
-        
-        @Test
-        @DisplayName("Alert 통계 조회")
-        void shouldGetAlertStatistics() {
-            // given
-            when(alertRepository.count()).thenReturn(100L);
-            when(alertRepository.countByStatus(AlertStatus.NEW)).thenReturn(20L);
-            when(alertRepository.countByStatus(AlertStatus.IN_REVIEW)).thenReturn(15L);
-            when(alertRepository.countByStatus(AlertStatus.ESCALATED)).thenReturn(5L);
-            when(alertRepository.countByStatus(AlertStatus.CONFIRMED)).thenReturn(30L);
-            when(alertRepository.countByStatus(AlertStatus.FALSE_POSITIVE)).thenReturn(25L);
-            when(alertRepository.countByStatus(AlertStatus.CLOSED)).thenReturn(5L);
-            when(alertRepository.countAlertsSince(any())).thenReturn(10L);
-            
-            // when
-            AlertService.AlertStats stats = alertService.getStatistics();
-            
-            // then
-            assertThat(stats.getTotalAlerts()).isEqualTo(100);
-            assertThat(stats.getNewAlerts()).isEqualTo(20);
-            assertThat(stats.getInReviewAlerts()).isEqualTo(15);
-            assertThat(stats.getEscalatedAlerts()).isEqualTo(5);
-            assertThat(stats.getOpenAlerts()).isEqualTo(40); // 20 + 15 + 5
-            assertThat(stats.getAlertsToday()).isEqualTo(10);
-        }
-    }
-    
     private AlertEntity createTestAlert() {
         return AlertEntity.builder()
                 .id(1L)
@@ -400,7 +370,6 @@ class AlertServiceTest {
                 .customerName("John Smith")
                 .score(85.0)
                 .explanation("Test alert")
-                .createdAt(LocalDateTime.now())
                 .build();
     }
     

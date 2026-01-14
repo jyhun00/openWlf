@@ -6,6 +6,7 @@ import aml.openwlf.api.dto.AlertUpdateRequest;
 import aml.openwlf.data.entity.AlertEntity;
 import aml.openwlf.data.entity.AlertEntity.AlertStatus;
 import aml.openwlf.data.service.AlertService;
+import aml.openwlf.data.service.AlertStatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,8 +33,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Alert Management", description = "APIs for managing and querying alerts")
 public class AlertController {
-    
+
     private final AlertService alertService;
+    private final AlertStatisticsService alertStatisticsService;
     
     @GetMapping
     @Operation(
@@ -209,9 +211,9 @@ public class AlertController {
             description = "Retrieves statistics about alerts"
     )
     @ApiResponse(responseCode = "200", description = "Successfully retrieved statistics")
-    public ResponseEntity<AlertService.AlertStats> getStatistics() {
+    public ResponseEntity<AlertStatisticsService.AlertStats> getStatistics() {
         log.info("Fetching alert statistics");
-        return ResponseEntity.ok(alertService.getStatistics());
+        return ResponseEntity.ok(alertStatisticsService.getStatistics());
     }
     
     @GetMapping("/{id}/case")

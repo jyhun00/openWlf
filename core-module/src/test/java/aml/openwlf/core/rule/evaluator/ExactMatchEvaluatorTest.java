@@ -17,14 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("ExactMatchEvaluator 테스트")
 class ExactMatchEvaluatorTest {
-    
+
     private ExactMatchEvaluator evaluator;
     private NormalizationService normalizationService;
-    
+    private FieldValueExtractor fieldExtractor;
+
     @BeforeEach
     void setUp() {
         normalizationService = new NormalizationService();
-        evaluator = new ExactMatchEvaluator(normalizationService);
+        fieldExtractor = new FieldValueExtractor();
+        evaluator = new ExactMatchEvaluator(fieldExtractor, normalizationService);
     }
     
     @Test

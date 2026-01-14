@@ -4,7 +4,7 @@ import aml.openwlf.api.dto.MatchingTestRequest;
 import aml.openwlf.api.dto.MatchingTestResponse;
 import aml.openwlf.api.dto.MatchingTestResponse.*;
 import aml.openwlf.core.matching.AdvancedMatchingService;
-import aml.openwlf.core.matching.AdvancedMatchingService.CompositeMatchResult;
+import aml.openwlf.core.matching.CompositeMatchResult;
 import aml.openwlf.core.matching.AdvancedMatchingService.MetaphoneResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

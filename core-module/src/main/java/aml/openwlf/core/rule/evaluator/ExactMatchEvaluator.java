@@ -5,7 +5,6 @@ import aml.openwlf.core.model.CustomerInfo;
 import aml.openwlf.core.model.MatchedRule;
 import aml.openwlf.core.normalization.NormalizationService;
 import aml.openwlf.core.rule.WatchlistEntry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -17,84 +16,65 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class ExactMatchEvaluator implements RuleEvaluator {
-    
+public class ExactMatchEvaluator extends AbstractRuleEvaluator {
+
     private final NormalizationService normalizationService;
-    
+
+    public ExactMatchEvaluator(FieldValueExtractor fieldExtractor,
+                               NormalizationService normalizationService) {
+        super(fieldExtractor);
+        this.normalizationService = normalizationService;
+    }
+
     @Override
     public String getMatchType() {
         return "EXACT";
     }
-    
+
     @Override
     public List<MatchedRule> evaluate(CustomerInfo customer, WatchlistEntry entry, RuleDefinition rule) {
         List<MatchedRule> results = new ArrayList<>();
-        
+
         String sourceField = rule.getCondition().getSourceField();
         String targetField = rule.getCondition().getTargetField();
-        
+
         String sourceValue = getFieldValue(customer, sourceField);
         List<String> targetValues = getTargetFieldValues(entry, targetField);
-        
-        if (sourceValue == null || sourceValue.isBlank()) {
+
+        if (!isValidSourceValue(sourceValue)) {
             return results;
         }
-        
+
         String normalizedSource = normalizeValue(sourceValue, sourceField);
-        
+
         for (String targetValue : targetValues) {
-            if (targetValue == null || targetValue.isBlank()) {
+            if (!isValidTargetValue(targetValue)) {
                 continue;
             }
-            
+
             String normalizedTarget = normalizeValue(targetValue, targetField);
-            
+
             if (normalizedSource.equals(normalizedTarget)) {
-                log.debug("Exact match found: {} = {} (Rule: {})", 
+                log.debug("Exact match found: {} = {} (Rule: {})",
                         sourceValue, targetValue, rule.getId());
-                
-                results.add(MatchedRule.builder()
-                        .ruleName(rule.getId())
-                        .ruleType(rule.getType())
-                        .score(rule.getScore().getExactMatch())
-                        .matchedValue(sourceValue)
-                        .targetValue(targetValue)
-                        .description(rule.getDescription())
-                        .build());
-                
-                // 정확 일치는 하나만 찾으면 됨
+
+                results.add(buildMatchedRule(
+                        rule,
+                        getExactMatchScore(rule.getScore()),
+                        sourceValue,
+                        targetValue,
+                        rule.getDescription()
+                ));
+
                 break;
             }
         }
-        
+
         return results;
     }
-    
-    private String getFieldValue(CustomerInfo customer, String field) {
-        return switch (field.toLowerCase()) {
-            case "name" -> customer.getName();
-            case "nationality" -> customer.getNationality();
-            case "dateofbirth", "dob" -> customer.getDateOfBirth() != null 
-                    ? customer.getDateOfBirth().toString() : null;
-            case "customerid" -> customer.getCustomerId();
-            default -> null;
-        };
-    }
-    
-    private List<String> getTargetFieldValues(WatchlistEntry entry, String field) {
-        return switch (field.toLowerCase()) {
-            case "name" -> List.of(entry.getName() != null ? entry.getName() : "");
-            case "aliases" -> entry.getAliases() != null ? entry.getAliases() : List.of();
-            case "nationality" -> List.of(entry.getNationality() != null ? entry.getNationality() : "");
-            case "dateofbirth", "dob" -> List.of(entry.getDateOfBirth() != null 
-                    ? entry.getDateOfBirth().toString() : "");
-            default -> List.of();
-        };
-    }
-    
+
     private String normalizeValue(String value, String field) {
-        if (field.equalsIgnoreCase("name") || field.equalsIgnoreCase("aliases")) {
+        if (fieldExtractor.isNameField(field)) {
             return normalizationService.normalizeName(value);
         } else if (field.equalsIgnoreCase("nationality")) {
             return normalizationService.normalizeNationality(value);

@@ -1,16 +1,15 @@
 package aml.openwlf.data.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * JPA Entity for alerts generated from filtering
+ *
+ * BaseEntity를 확장하여 JPA Auditing으로 createdAt/updatedAt 자동 관리
  */
 @Entity
 @Table(name = "alerts", indexes = {
@@ -19,11 +18,12 @@ import java.time.LocalDateTime;
         @Index(name = "idx_alert_created_at", columnList = "created_at"),
         @Index(name = "idx_alert_score", columnList = "score")
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AlertEntity {
+public class AlertEntity extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,25 +68,12 @@ public class AlertEntity {
     
     @Column(name = "resolved_by", length = 100)
     private String resolvedBy;
-    
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
+
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
         if (status == null) {
             status = AlertStatus.NEW;
         }
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
     
     /**

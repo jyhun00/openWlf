@@ -83,21 +83,69 @@ public class RuleDefinition {
         
         /**
          * 파라미터 값을 타입 안전하게 가져오기
+         *
+         * 지원 타입: Double, Integer, Boolean, String
+         * 타입 변환을 자동으로 수행하여 ClassCastException을 방지합니다.
+         *
+         * @param key 파라미터 키
+         * @param defaultValue 기본값 (타입 추론에 사용)
+         * @return 파라미터 값 또는 기본값
          */
         @SuppressWarnings("unchecked")
         public <T> T getParameter(String key, T defaultValue) {
             if (parameters == null || !parameters.containsKey(key)) {
                 return defaultValue;
             }
+
+            // 타입별 안전한 변환
+            if (defaultValue instanceof Double) {
+                return (T) (Double) RuleParameters.getDouble(parameters, key, (Double) defaultValue);
+            }
+            if (defaultValue instanceof Integer) {
+                return (T) (Integer) RuleParameters.getInt(parameters, key, (Integer) defaultValue);
+            }
+            if (defaultValue instanceof Boolean) {
+                return (T) (Boolean) RuleParameters.getBoolean(parameters, key, (Boolean) defaultValue);
+            }
+            if (defaultValue instanceof String) {
+                return (T) RuleParameters.getString(parameters, key, (String) defaultValue);
+            }
+
+            // 기타 타입은 그대로 반환 시도
             Object value = parameters.get(key);
             try {
-                if (defaultValue instanceof Double && value instanceof Integer) {
-                    return (T) Double.valueOf(((Integer) value).doubleValue());
-                }
                 return (T) value;
             } catch (ClassCastException e) {
                 return defaultValue;
             }
+        }
+
+        /**
+         * Double 파라미터 추출 (타입 안전)
+         */
+        public double getDoubleParameter(String key, double defaultValue) {
+            return RuleParameters.getDouble(parameters, key, defaultValue);
+        }
+
+        /**
+         * Integer 파라미터 추출 (타입 안전)
+         */
+        public int getIntParameter(String key, int defaultValue) {
+            return RuleParameters.getInt(parameters, key, defaultValue);
+        }
+
+        /**
+         * Boolean 파라미터 추출 (타입 안전)
+         */
+        public boolean getBooleanParameter(String key, boolean defaultValue) {
+            return RuleParameters.getBoolean(parameters, key, defaultValue);
+        }
+
+        /**
+         * String 파라미터 추출 (타입 안전)
+         */
+        public String getStringParameter(String key, String defaultValue) {
+            return RuleParameters.getString(parameters, key, defaultValue);
         }
     }
     
