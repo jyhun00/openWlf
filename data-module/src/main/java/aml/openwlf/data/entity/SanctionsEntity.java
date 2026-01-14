@@ -216,12 +216,11 @@ public class SanctionsEntity {
     /**
      * additional_features에서 값 조회
      */
-    @SuppressWarnings("unchecked")
     public <T> T getFeature(String key, Class<T> type) {
         if (additionalFeatures == null) {
             return null;
         }
         Object value = additionalFeatures.get(key);
-        return type.isInstance(value) ? (T) value : null;
+        return type.isInstance(value) ? type.cast(value) : null;
     }
 }

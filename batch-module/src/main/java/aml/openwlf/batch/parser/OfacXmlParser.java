@@ -221,10 +221,11 @@ public class OfacXmlParser implements SanctionsXmlParser {
         if (features.containsKey("Nationality")) {
             Object nationality = features.get("Nationality");
             if (nationality instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<String> nationalities = (List<String>) nationality;
-                dataBuilder.nationality(String.join(",", nationalities));
-            } else {
+                List<String> nationalities = castToStringList(nationality);
+                if (nationalities != null) {
+                    dataBuilder.nationality(String.join(",", nationalities));
+                }
+            } else if (nationality instanceof String) {
                 dataBuilder.nationality((String) nationality);
             }
         }
@@ -401,10 +402,12 @@ public class OfacXmlParser implements SanctionsXmlParser {
                         if (features.containsKey(featureType)) {
                             Object existing = features.get(featureType);
                             if (existing instanceof List) {
-                                @SuppressWarnings("unchecked")
-                                List<String> list = (List<String>) existing;
-                                list.add(detailValue);
-                            } else {
+                                List<String> list = castToStringList(existing);
+                                if (list != null) {
+                                    list.add(detailValue);
+                                    features.put(featureType, list);
+                                }
+                            } else if (existing instanceof String) {
                                 List<String> list = new ArrayList<>();
                                 list.add((String) existing);
                                 list.add(detailValue);
@@ -703,5 +706,23 @@ public class OfacXmlParser implements SanctionsXmlParser {
     @Override
     public String getSourceFile() {
         return SOURCE_FILE;
+    }
+
+    /**
+     * Object를 List<String>으로 안전하게 캐스팅
+     * 타입 검증을 수행하여 ClassCastException 방지
+     */
+    private List<String> castToStringList(Object obj) {
+        if (!(obj instanceof List<?>)) {
+            return null;
+        }
+        List<?> list = (List<?>) obj;
+        List<String> result = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof String) {
+                result.add((String) item);
+            }
+        }
+        return result;
     }
 }
