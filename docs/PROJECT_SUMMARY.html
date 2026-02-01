@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4;
-            margin: 20mm 15mm;
+            margin: 20mm 15mm 25mm 15mm;
         }
 
         * {
@@ -172,10 +172,27 @@
             page-break-before: always;
         }
 
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9pt;
+            color: #718096;
+            padding: 10px 0;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
         @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .container { padding: 0; }
+            .container { padding: 0; padding-bottom: 30px; }
             .page-break { page-break-before: always; }
+            .footer {
+                position: fixed;
+                bottom: 0;
+            }
         }
     </style>
 </head>
@@ -291,17 +308,7 @@
             </div>
             <div>
                 <h2>모듈 구조</h2>
-                <div class="module-structure">openWLF/
-├── api-module/
-│   └── REST API (Controller, DTO)
-├── core-module/
-│   └── 필터링, 규칙 엔진, 스코어링
-├── data-module/
-│   └── Entity, Repository, Service
-├── config-module/
-│   └── YAML 규칙 설정 로더
-└── batch-module/
-    └── 제재 리스트 동기화</div>
+                <div class="module-structure">openWLF/<p></p>├── api-module/    → REST API 진입점 (Controller, DTO)<p></p>├── core-module/   → 핵심 비즈니스 로직 (필터링, 규칙 엔진, 스코어링)<p></p>├── data-module/   → 데이터 접근 계층 (Entity, Repository, Service)<p></p>├── config-module/ → YAML 기반 규칙 설정 로더<p></p>└── batch-module/  → 배치 처리 (제재 리스트 동기화)</div>
             </div>
         </div>
 
@@ -320,5 +327,6 @@
             <li><strong>완전한 감사 추적:</strong> AML 컴플라이언스 요구사항 충족</li>
         </ul>
     </div>
+    <div class="footer">OpenWLF 프로젝트 요약 보고서</div>
 </body>
 </html>
