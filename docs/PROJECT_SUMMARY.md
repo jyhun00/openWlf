@@ -120,11 +120,11 @@
 
 ```
 openWLF/
-├── api-module/       → REST API 진입점 (Controller, DTO)
-├── core-module/      → 핵심 비즈니스 로직 (필터링, 규칙 엔진, 스코어링)
-├── data-module/      → 데이터 접근 계층 (Entity, Repository, Service)
-├── config-module/    → YAML 기반 규칙 설정 로더
-└── batch-module/     → 배치 처리 (제재 리스트 동기화)
+├── api-module/    
+├── core-module/   
+├── data-module/   
+├── config-module/ 
+└── batch-module/  
 ```
 
 ---
