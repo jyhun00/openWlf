@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>케이스 상세 - Case Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .info-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .badge-critical { background: #e74c3c; }
+        .badge-high { background: #e67e22; }
+        .badge-medium { background: #f1c40f; color: #333; }
+        .badge-low { background: #27ae60; }
+
+        .badge-open { background: #3498db; }
+        .badge-in_progress { background: #9b59b6; }
+        .badge-pending_info { background: #e67e22; }
+        .badge-pending_review { background: #f39c12; color: #333; }
+        .badge-escalated { background: #e74c3c; }
+        .badge-closed { background: #95a5a6; }
+
+        /* Score */
+        .score-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .score-label { font-size: 14px; color: #666; font-weight: 500; }
+        .score-value { font-size: 32px; font-weight: 700; }
+        .score-low { color: #27ae60; }
+        .score-medium { color: #f39c12; }
+        .score-high { color: #e74c3c; }
+        .score-bar { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 5px; }
+        .score-fill.low { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+        .score-fill.medium { background: linear-gradient(90deg, #f39c12, #e67e22); }
+        .score-fill.high { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+
+        /* Alert/Comment/Activity lists */
+        .list-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .list-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .list-item-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+        .list-item-meta {
+            font-size: 12px;
+            color: #888;
+        }
+        .list-item-body {
+            font-size: 13px;
+            color: #555;
+        }
+        .empty-list {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Decision Form */
+        .decision-form {
+            background: #f0f0ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 25px;
+        }
+        .decision-form .form-group {
+            margin-bottom: 20px;
+        }
+        .decision-form label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .radio-option:hover {
+            border-color: #667eea;
+        }
+        .radio-option input[type="radio"] {
+            accent-color: #667eea;
+            width: 18px;
+            height: 18px;
+        }
+        .radio-label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .radio-desc {
+            font-size: 12px;
+            color: #888;
+        }
+        .decision-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .decision-form textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .decision-form input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .decision-form input[type="text"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        /* Existing Decision */
+        .existing-decision {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+        .decision-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .decision-true_positive { background: #e74c3c; }
+        .decision-false_positive { background: #27ae60; }
+        .decision-inconclusive { background: #95a5a6; }
+        .decision-escalated_to_le { background: #e67e22; }
+        .decision-no_action_required { background: #3498db; }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: #e0e0e0;
+            color: #333;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        /* Error */
+        .error-msg {
+            background: #fff5f5;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>케이스 상세</h1>
+
+        <!-- Error Message -->
+        <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Case Basic Info -->
+        <div class="section">
+            <div class="section-title">기본 정보</div>
+            <div class="info-grid three-col">
+                <div class="info-item">
+                    <div class="info-label">참조번호</div>
+                    <div class="info-value" style="font-family: monospace;" th:text="${caseEntity.caseReference}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">고객명</div>
+                    <div class="info-value" th:text="${caseEntity.customerName}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">케이스 유형</div>
+                    <div class="info-value" th:text="${caseEntity.caseType}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">우선순위</div>
+                    <div class="info-value">
+                        <span class="badge"
+                              th:classappend="${caseEntity.priority.name() == 'CRITICAL'} ? 'badge-critical' : (${caseEntity.priority.name() == 'HIGH'} ? 'badge-high' : (${caseEntity.priority.name() == 'MEDIUM'} ? 'badge-medium' : 'badge-low'))"
+                              th:text="${caseEntity.priority.name()}"></span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">상태</div>
+                    <div class="info-value">
+                        <span class="badge"
+                              th:classappend="'badge-' + ${caseEntity.status.name().toLowerCase()}"
+                              th:text="${caseEntity.status.name()}"></span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">담당자</div>
+                    <div class="info-value" th:text="${caseEntity.assignedTo != null} ? ${caseEntity.assignedTo} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">생성일</div>
+                    <div class="info-value" th:text="${caseEntity.createdAt != null} ? ${#temporals.format(caseEntity.createdAt, 'yyyy-MM-dd HH:mm')} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">마감일</div>
+                    <div class="info-value" th:text="${caseEntity.dueDate != null} ? ${#temporals.format(caseEntity.dueDate, 'yyyy-MM-dd HH:mm')} : '-'"></div>
+                </div>
+                <div class="info-item" th:if="${caseEntity.description != null}">
+                    <div class="info-label">설명</div>
+                    <div class="info-value" th:text="${caseEntity.description}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Score -->
+        <div class="score-section" th:if="${caseEntity.riskScore != null}">
+            <div class="score-header">
+                <span class="score-label">리스크 점수 (Risk Score)</span>
+                <span class="score-value"
+                      th:classappend="${caseEntity.riskScore >= 70} ? 'score-high' : (${caseEntity.riskScore >= 50} ? 'score-medium' : 'score-low')"
+                      th:text="${#numbers.formatDecimal(caseEntity.riskScore, 1, 1)}"></span>
+            </div>
+            <div class="score-bar">
+                <div class="score-fill"
+                     th:classappend="${caseEntity.riskScore >= 70} ? 'high' : (${caseEntity.riskScore >= 50} ? 'medium' : 'low')"
+                     th:style="'width: ' + ${caseEntity.riskScore} + '%'"></div>
+            </div>
+        </div>
+
+        <!-- Linked Alerts -->
+        <div class="section">
+            <div class="section-title">연결된 Alert</div>
+            <div th:if="${!linkedAlerts.isEmpty()}" class="list-container">
+                <div class="list-item" th:each="link : ${linkedAlerts}">
+                    <div class="list-item-header">
+                        <span class="list-item-title" th:text="${link.alertEntity.alertReference}"></span>
+                        <span class="list-item-meta" th:text="${link.alertEntity.status}"></span>
+                    </div>
+                    <div class="list-item-body">
+                        <span th:text="${link.alertEntity.customerName}"></span> -
+                        Score: <strong th:text="${#numbers.formatDecimal(link.alertEntity.score, 1, 1)}"></strong>
+                        <span th:if="${link.linkReason != null}"> | <span th:text="${link.linkReason}"></span></span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${linkedAlerts.isEmpty()}" class="empty-list">연결된 Alert가 없습니다.</div>
+        </div>
+
+        <!-- Comments -->
+        <div class="section">
+            <div class="section-title">코멘트</div>
+            <div th:if="${!comments.isEmpty()}" class="list-container">
+                <div class="list-item" th:each="comment : ${comments}">
+                    <div class="list-item-header">
+                        <span class="list-item-title">
+                            <span th:text="${comment.createdBy}"></span>
+                            <span class="badge" style="font-size:11px; padding:2px 6px; background:#e0e0e0; color:#555;"
+                                  th:text="${comment.commentType}"></span>
+                        </span>
+                        <span class="list-item-meta"
+                              th:text="${comment.createdAt != null} ? ${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')} : ''"></span>
+                    </div>
+                    <div class="list-item-body" th:text="${comment.content}"></div>
+                </div>
+            </div>
+            <div th:if="${comments.isEmpty()}" class="empty-list">코멘트가 없습니다.</div>
+        </div>
+
+        <!-- Activities -->
+        <div class="section">
+            <div class="section-title">활동 로그</div>
+            <div th:if="${!activities.isEmpty()}" class="list-container">
+                <div class="list-item" th:each="activity : ${activities}">
+                    <div class="list-item-header">
+                        <span class="list-item-title" th:text="${activity.activityType}"></span>
+                        <span class="list-item-meta"
+                              th:text="${activity.createdAt != null} ? ${#temporals.format(activity.createdAt, 'yyyy-MM-dd HH:mm')} : ''"></span>
+                    </div>
+                    <div class="list-item-body">
+                        <span th:text="${activity.description}"></span>
+                        <span th:if="${activity.performedBy != null}"> - <em th:text="${activity.performedBy}"></em></span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${activities.isEmpty()}" class="empty-list">활동 기록이 없습니다.</div>
+        </div>
+
+        <!-- Decision Section -->
+        <div class="section">
+            <div class="section-title">최종 결정</div>
+
+            <!-- Already decided -->
+            <div th:if="${caseEntity.decision != null}" class="existing-decision">
+                <div class="decision-badge"
+                     th:classappend="'decision-' + ${caseEntity.decision.name().toLowerCase()}"
+                     th:text="${caseEntity.decision.name()}"></div>
+                <div style="margin-bottom:10px; font-size:14px; color:#555;">
+                    사유: <span th:text="${caseEntity.decisionRationale}"></span>
+                </div>
+                <div style="font-size:13px; color:#888;">
+                    결정자: <span th:text="${caseEntity.closedBy}"></span>
+                    | 결정일: <span th:text="${caseEntity.closedAt != null} ? ${#temporals.format(caseEntity.closedAt, 'yyyy-MM-dd HH:mm')} : '-'"></span>
+                </div>
+            </div>
+
+            <!-- Decision Form -->
+            <form th:if="${caseEntity.decision == null}"
+                  class="decision-form"
+                  method="post"
+                  th:action="@{/cases/{id}/decision(id=${caseEntity.id})}">
+
+                <div class="form-group">
+                    <label>결정 유형</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="decision" value="TRUE_POSITIVE" required>
+                            <div>
+                                <div class="radio-label" style="color:#e74c3c;">TRUE_POSITIVE</div>
+                                <div class="radio-desc">실제 위험 확인</div>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="decision" value="FALSE_POSITIVE">
+                            <div>
+                                <div class="radio-label" style="color:#27ae60;">FALSE_POSITIVE</div>
+                                <div class="radio-desc">오탐 (위험하지 않음)</div>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="decision" value="INCONCLUSIVE">
+                            <div>
+                                <div class="radio-label" style="color:#95a5a6;">INCONCLUSIVE</div>
+                                <div class="radio-desc">판단 불가</div>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="decision" value="ESCALATED_TO_LE">
+                            <div>
+                                <div class="radio-label" style="color:#e67e22;">ESCALATED_TO_LE</div>
+                                <div class="radio-desc">법 집행기관 보고</div>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="decision" value="NO_ACTION_REQUIRED">
+                            <div>
+                                <div class="radio-label" style="color:#3498db;">NO_ACTION_REQUIRED</div>
+                                <div class="radio-desc">조치 불필요</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rationale">결정 사유</label>
+                    <textarea id="rationale" name="rationale" placeholder="결정 사유를 상세히 입력하세요 (최소 10자)" required minlength="10"></textarea>
+                    <div class="hint">최소 10자 이상 입력해야 합니다.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="decidedBy">결정자</label>
+                    <input type="text" id="decidedBy" name="decidedBy" placeholder="결정자 ID를 입력하세요" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">결정 제출</button>
+            </form>
+        </div>
+
+        <!-- Navigation -->
+        <div class="btn-group">
+            <a th:href="@{/cases}" class="btn-secondary">목록으로</a>
+            <a href="/" class="btn-secondary">홈으로</a>
+        </div>
+    </div>
+</body>
+</html>

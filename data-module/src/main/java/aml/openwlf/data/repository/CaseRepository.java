@@ -57,6 +57,11 @@ public interface CaseRepository extends JpaRepository<CaseEntity, Long> {
      * 고객 ID로 조회
      */
     List<CaseEntity> findByCustomerId(String customerId);
+
+    /**
+     * 고객 ID로 페이지네이션 조회
+     */
+    Page<CaseEntity> findByCustomerId(String customerId, Pageable pageable);
     
     /**
      * 마감 기한 임박한 케이스 조회
@@ -84,6 +89,11 @@ public interface CaseRepository extends JpaRepository<CaseEntity, Long> {
             @Param("customerId") String customerId,
             Pageable pageable);
     
+    /**
+     * 여러 상태로 조회 (우선순위순 정렬)
+     */
+    Page<CaseEntity> findByStatusInOrderByPriorityAscDueDateAsc(List<CaseStatus> statuses, Pageable pageable);
+
     /**
      * 상태별 카운트
      */

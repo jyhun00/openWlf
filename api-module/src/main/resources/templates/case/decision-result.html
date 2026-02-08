@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결정 완료 - Case Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* Decision Status Card */
+        .status-card {
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: white;
+        }
+        .status-true_positive {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .status-false_positive {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .status-inconclusive {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+        .status-escalated_to_le {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+        .status-no_action_required {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .status-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .status-message {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Decision descriptions */
+        .decision-desc-true_positive::after { content: "실제 위험이 확인되었습니다"; }
+        .decision-desc-false_positive::after { content: "오탐으로 판정되었습니다"; }
+        .decision-desc-inconclusive::after { content: "추가 정보가 필요합니다"; }
+        .decision-desc-escalated_to_le::after { content: "법 집행기관에 보고되었습니다"; }
+        .decision-desc-no_action_required::after { content: "조치가 불필요합니다"; }
+
+        /* Info Section */
+        .info-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Rationale */
+        .rationale-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .rationale-label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .rationale-text {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>결정 완료</h1>
+
+        <!-- Decision Status Card -->
+        <div class="status-card"
+             th:classappend="'status-' + ${caseEntity.decision.name().toLowerCase()}">
+            <div class="status-icon"
+                 th:text="${caseEntity.decision.name() == 'TRUE_POSITIVE' or caseEntity.decision.name() == 'ESCALATED_TO_LE'} ? '&#9888;' : (${caseEntity.decision.name() == 'FALSE_POSITIVE' or caseEntity.decision.name() == 'NO_ACTION_REQUIRED'} ? '&#10004;' : '&#8263;')"></div>
+            <div class="status-title" th:text="${caseEntity.decision.name()}"></div>
+            <div class="status-message"
+                 th:classappend="'decision-desc-' + ${caseEntity.decision.name().toLowerCase()}"></div>
+        </div>
+
+        <!-- Case Info Summary -->
+        <div class="info-section">
+            <div class="section-title">케이스 정보</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">참조번호</div>
+                    <div class="info-value" style="font-family: monospace;" th:text="${caseEntity.caseReference}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">고객명</div>
+                    <div class="info-value" th:text="${caseEntity.customerName}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">케이스 유형</div>
+                    <div class="info-value" th:text="${caseEntity.caseType}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">결정자</div>
+                    <div class="info-value" th:text="${caseEntity.closedBy}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">결정일시</div>
+                    <div class="info-value" th:text="${caseEntity.closedAt != null} ? ${#temporals.format(caseEntity.closedAt, 'yyyy-MM-dd HH:mm:ss')} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">상태</div>
+                    <div class="info-value" th:text="${caseEntity.status}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision Rationale -->
+        <div class="rationale-box">
+            <div class="rationale-label">결정 사유</div>
+            <div class="rationale-text" th:text="${caseEntity.decisionRationale}"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-group">
+            <a th:href="@{/cases}" class="btn btn-primary">목록으로 돌아가기</a>
+            <a th:href="@{/cases/{id}(id=${caseEntity.id})}" class="btn btn-secondary">케이스 상세</a>
+        </div>
+    </div>
+</body>
+</html>

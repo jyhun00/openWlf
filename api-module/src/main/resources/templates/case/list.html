@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>케이스 목록 - Case Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* Filters */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+        .filter-bar select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        .filter-bar select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .filter-bar .btn-filter {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .filter-bar .btn-reset {
+            padding: 8px 20px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Table */
+        .case-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .case-table thead th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+        }
+        .case-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .case-table tbody tr:hover {
+            background: #f0f0ff;
+        }
+        .case-table tbody td {
+            padding: 12px 10px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .badge-critical { background: #e74c3c; }
+        .badge-high { background: #e67e22; }
+        .badge-medium { background: #f1c40f; color: #333; }
+        .badge-low { background: #27ae60; }
+
+        .badge-open { background: #3498db; }
+        .badge-in_progress { background: #9b59b6; }
+        .badge-pending_info { background: #e67e22; }
+        .badge-pending_review { background: #f39c12; color: #333; }
+        .badge-escalated { background: #e74c3c; }
+        .badge-closed { background: #95a5a6; }
+
+        /* Score */
+        .score {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .score-low { color: #27ae60; }
+        .score-medium { color: #f39c12; }
+        .score-high { color: #e74c3c; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .pagination a {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+        }
+        .pagination .active {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .home-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>케이스 목록</h1>
+
+        <!-- Filter Bar -->
+        <form class="filter-bar" method="get" th:action="@{/cases}">
+            <label for="status">상태:</label>
+            <select id="status" name="status">
+                <option value="">전체 (열린 케이스)</option>
+                <option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.name()}"
+                        th:selected="${selectedStatus != null and selectedStatus == s.name()}"></option>
+            </select>
+
+            <label for="priority">우선순위:</label>
+            <select id="priority" name="priority">
+                <option value="">전체</option>
+                <option th:each="p : ${priorities}" th:value="${p.name()}" th:text="${p.name()}"
+                        th:selected="${selectedPriority != null and selectedPriority == p.name()}"></option>
+            </select>
+
+            <button type="submit" class="btn-filter">필터 적용</button>
+            <a th:href="@{/cases}" class="btn-reset">초기화</a>
+        </form>
+
+        <!-- Cases Table -->
+        <div th:if="${cases.totalElements > 0}">
+            <table class="case-table">
+                <thead>
+                    <tr>
+                        <th>참조번호</th>
+                        <th>고객명</th>
+                        <th>유형</th>
+                        <th>우선순위</th>
+                        <th>상태</th>
+                        <th>리스크 점수</th>
+                        <th>담당자</th>
+                        <th>생성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${cases.content}"
+                        th:onclick="'window.location.href=\'/cases/' + ${c.id} + '\''">
+                        <td th:text="${c.caseReference}" style="font-family: monospace; font-weight: 600;"></td>
+                        <td th:text="${c.customerName}"></td>
+                        <td th:text="${c.caseType}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${c.priority.name() == 'CRITICAL'} ? 'badge-critical' : (${c.priority.name() == 'HIGH'} ? 'badge-high' : (${c.priority.name() == 'MEDIUM'} ? 'badge-medium' : 'badge-low'))"
+                                  th:text="${c.priority.name()}"></span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="'badge-' + ${c.status.name().toLowerCase()}"
+                                  th:text="${c.status.name()}"></span>
+                        </td>
+                        <td>
+                            <span class="score"
+                                  th:classappend="${c.riskScore != null and c.riskScore >= 70} ? 'score-high' : (${c.riskScore != null and c.riskScore >= 50} ? 'score-medium' : 'score-low')"
+                                  th:text="${c.riskScore != null} ? ${#numbers.formatDecimal(c.riskScore, 1, 1)} : '-'"></span>
+                        </td>
+                        <td th:text="${c.assignedTo != null} ? ${c.assignedTo} : '-'"></td>
+                        <td th:text="${c.createdAt != null} ? ${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm')} : '-'"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination" th:if="${cases.totalPages > 1}">
+                <a th:if="${cases.number > 0}"
+                   th:href="@{/cases(page=${cases.number - 1}, size=${cases.size}, status=${selectedStatus}, priority=${selectedPriority})}">이전</a>
+                <th:block th:each="i : ${#numbers.sequence(0, cases.totalPages - 1)}">
+                    <span th:if="${i == cases.number}" class="active" th:text="${i + 1}"></span>
+                    <a th:unless="${i == cases.number}"
+                       th:href="@{/cases(page=${i}, size=${cases.size}, status=${selectedStatus}, priority=${selectedPriority})}"
+                       th:text="${i + 1}"></a>
+                </th:block>
+                <a th:if="${cases.number < cases.totalPages - 1}"
+                   th:href="@{/cases(page=${cases.number + 1}, size=${cases.size}, status=${selectedStatus}, priority=${selectedPriority})}">다음</a>
+            </div>
+        </div>
+
+        <div th:if="${cases.totalElements == 0}" class="empty-state">
+            해당 조건에 맞는 케이스가 없습니다.
+        </div>
+
+        <div class="home-link">
+            <a href="/">홈으로</a>
+        </div>
+    </div>
+</body>
+</html>
