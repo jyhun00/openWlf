@@ -119,7 +119,7 @@ public class SanctionsEntity {
      * }
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "additional_features", columnDefinition = "jsonb")
+    @Column(name = "additional_features")
     @Builder.Default
     private Map<String, Object> additionalFeatures = new HashMap<>();
     

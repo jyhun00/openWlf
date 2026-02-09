@@ -73,7 +73,7 @@ public class AuditSensitiveDataAccessLogEntity {
      * 다건 조회 시 ID 목록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "entity_ids", columnDefinition = "jsonb")
+    @Column(name = "entity_ids")
     private List<String> entityIds;
 
     // ===== 검색 정보 =====
@@ -82,7 +82,7 @@ public class AuditSensitiveDataAccessLogEntity {
      * 검색 조건 기록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "search_criteria", columnDefinition = "jsonb")
+    @Column(name = "search_criteria")
     private Map<String, Object> searchCriteria;
 
     /**
@@ -141,6 +141,6 @@ public class AuditSensitiveDataAccessLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

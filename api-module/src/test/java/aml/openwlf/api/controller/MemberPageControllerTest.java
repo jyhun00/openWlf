@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -20,7 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("MemberPageController 통합 테스트")
-@WithMockUser(username = "analyst1", authorities = "ROLE_ANALYST")
 class MemberPageControllerTest {
 
     @Autowired
@@ -33,7 +32,8 @@ class MemberPageControllerTest {
         @Test
         @DisplayName("회원가입 폼 페이지 정상 렌더링")
         void shouldRenderRegisterForm() throws Exception {
-            mockMvc.perform(get("/member/register"))
+            mockMvc.perform(get("/member/register")
+                            .with(user("analyst1").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANALYST"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("member/register"))
                     .andExpect(model().attributeExists("memberRequest"));
@@ -49,6 +49,7 @@ class MemberPageControllerTest {
         void shouldShowResultOnValidSubmission() throws Exception {
             mockMvc.perform(post("/member/register")
                             .with(csrf())
+                            .with(user("analyst1").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANALYST")))
                             .param("name", "홍길동")
                             .param("dateOfBirth", "1990-01-15")
                             .param("nationality", "KR"))
@@ -63,6 +64,7 @@ class MemberPageControllerTest {
         void shouldReturnHighScoreForWatchlistMatch() throws Exception {
             mockMvc.perform(post("/member/register")
                             .with(csrf())
+                            .with(user("analyst1").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANALYST")))
                             .param("name", "Kim Jong Un")
                             .param("dateOfBirth", "1984-01-08")
                             .param("nationality", "KP"))
@@ -76,6 +78,7 @@ class MemberPageControllerTest {
         void shouldReturnToFormWhenNameEmpty() throws Exception {
             mockMvc.perform(post("/member/register")
                             .with(csrf())
+                            .with(user("analyst1").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANALYST")))
                             .param("name", ""))
                     .andExpect(status().isOk())
                     .andExpect(view().name("member/register"));
@@ -86,6 +89,7 @@ class MemberPageControllerTest {
         void shouldApproveRegistrationForSafeName() throws Exception {
             mockMvc.perform(post("/member/register")
                             .with(csrf())
+                            .with(user("analyst1").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANALYST")))
                             .param("name", "이영희")
                             .param("nationality", "KR"))
                     .andExpect(status().isOk())

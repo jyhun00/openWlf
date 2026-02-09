@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -23,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("MemberFilteringController 통합 테스트")
-@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class MemberFilteringControllerTest {
 
     @Autowired
@@ -47,7 +46,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.score").isNumber())
                     .andExpect(jsonPath("$.registrationAllowed").isBoolean())
@@ -65,7 +65,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.score", greaterThanOrEqualTo(70.0)))
                     .andExpect(jsonPath("$.registrationAllowed").value(false))
@@ -83,7 +84,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.registrationAllowed").value(true));
         }
@@ -97,7 +99,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isBadRequest());
         }
 
@@ -115,7 +118,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.memberInfo.name").value("홍길동"))
                     .andExpect(jsonPath("$.memberInfo.nationality").value("KR"))
@@ -134,7 +138,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.alertReference").exists())
                     .andExpect(jsonPath("$.alertReference", startsWith("ALT-")));
@@ -151,7 +156,8 @@ class MemberFilteringControllerTest {
 
             mockMvc.perform(post("/api/member/filter")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.matchedRules").isArray())
                     .andExpect(jsonPath("$.matchedRules", hasSize(greaterThan(0))))

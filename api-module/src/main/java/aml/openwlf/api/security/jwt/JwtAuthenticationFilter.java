@@ -29,6 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        // Skip if authentication is already set (e.g., by @WithMockUser in tests)
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = extractTokenFromRequest(request);
 
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {

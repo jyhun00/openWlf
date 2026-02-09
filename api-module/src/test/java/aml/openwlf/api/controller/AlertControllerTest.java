@@ -14,13 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("AlertController 통합 테스트")
-@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class AlertControllerTest {
 
     @Autowired
@@ -67,7 +66,8 @@ class AlertControllerTest {
         void shouldGetAllAlerts() throws Exception {
             mockMvc.perform(get("/api/alerts")
                             .param("page", "0")
-                            .param("size", "20"))
+                            .param("size", "20")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
                     .andExpect(jsonPath("$.totalElements").exists());
@@ -77,7 +77,8 @@ class AlertControllerTest {
         @DisplayName("상태 필터링으로 Alert 조회")
         void shouldGetAlertsByStatus() throws Exception {
             mockMvc.perform(get("/api/alerts")
-                            .param("status", "NEW"))
+                            .param("status", "NEW")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -86,7 +87,8 @@ class AlertControllerTest {
         @DisplayName("customerId로 Alert 조회")
         void shouldGetAlertsByCustomerId() throws Exception {
             mockMvc.perform(get("/api/alerts")
-                            .param("customerId", "CUST-001"))
+                            .param("customerId", "CUST-001")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -95,7 +97,8 @@ class AlertControllerTest {
         @DisplayName("최소 점수로 Alert 필터링")
         void shouldGetAlertsByMinScore() throws Exception {
             mockMvc.perform(get("/api/alerts")
-                            .param("minScore", "70.0"))
+                            .param("minScore", "70.0")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -108,7 +111,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("Open Alert 조회 성공")
         void shouldGetOpenAlerts() throws Exception {
-            mockMvc.perform(get("/api/alerts/open"))
+            mockMvc.perform(get("/api/alerts/open")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -121,7 +125,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("ID로 Alert 조회 성공")
         void shouldGetAlertById() throws Exception {
-            mockMvc.perform(get("/api/alerts/" + testAlert.getId()))
+            mockMvc.perform(get("/api/alerts/" + testAlert.getId())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(testAlert.getId()))
                     .andExpect(jsonPath("$.alertReference").value(testAlert.getAlertReference()))
@@ -132,7 +137,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("존재하지 않는 Alert 조회 시 404 반환")
         void shouldReturn404WhenAlertNotFound() throws Exception {
-            mockMvc.perform(get("/api/alerts/999999"))
+            mockMvc.perform(get("/api/alerts/999999")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -144,7 +150,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("Reference로 Alert 조회 성공")
         void shouldGetAlertByReference() throws Exception {
-            mockMvc.perform(get("/api/alerts/reference/" + testAlert.getAlertReference()))
+            mockMvc.perform(get("/api/alerts/reference/" + testAlert.getAlertReference())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.alertReference").value(testAlert.getAlertReference()));
         }
@@ -152,7 +159,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("존재하지 않는 Reference로 조회 시 404 반환")
         void shouldReturn404WhenReferenceNotFound() throws Exception {
-            mockMvc.perform(get("/api/alerts/reference/INVALID-REF"))
+            mockMvc.perform(get("/api/alerts/reference/INVALID-REF")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -171,7 +179,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/" + testAlert.getId() + "/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("IN_REVIEW"));
         }
@@ -187,7 +196,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/" + testAlert.getId() + "/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("CONFIRMED"))
                     .andExpect(jsonPath("$.resolutionComment").value("Verified against sanctions list"));
@@ -204,7 +214,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/" + testAlert.getId() + "/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("FALSE_POSITIVE"));
         }
@@ -219,7 +230,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/" + testAlert.getId() + "/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isBadRequest());
         }
 
@@ -233,7 +245,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/999999/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -251,7 +264,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/" + testAlert.getId() + "/assign")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.assignedTo").value("analyst@company.com"))
                     .andExpect(jsonPath("$.status").value("IN_REVIEW"));
@@ -266,7 +280,8 @@ class AlertControllerTest {
 
             mockMvc.perform(put("/api/alerts/999999/assign")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -278,7 +293,8 @@ class AlertControllerTest {
         @Test
         @DisplayName("Alert 통계 조회 성공")
         void shouldGetAlertStatistics() throws Exception {
-            mockMvc.perform(get("/api/alerts/stats"))
+            mockMvc.perform(get("/api/alerts/stats")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalAlerts").exists())
                     .andExpect(jsonPath("$.newAlerts").exists())

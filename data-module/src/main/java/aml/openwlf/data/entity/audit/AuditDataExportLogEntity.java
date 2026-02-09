@@ -65,7 +65,7 @@ public class AuditDataExportLogEntity {
      * 적용된 필터 조건
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "filter_criteria", columnDefinition = "jsonb")
+    @Column(name = "filter_criteria")
     private Map<String, Object> filterCriteria;
 
     /**
@@ -155,6 +155,6 @@ public class AuditDataExportLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

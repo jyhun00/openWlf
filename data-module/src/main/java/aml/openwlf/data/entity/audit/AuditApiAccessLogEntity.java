@@ -137,6 +137,6 @@ public class AuditApiAccessLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

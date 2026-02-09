@@ -17,13 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("CaseController 통합 테스트")
-@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class CaseControllerTest {
 
     @Autowired
@@ -87,7 +86,8 @@ class CaseControllerTest {
         void shouldGetAllCases() throws Exception {
             mockMvc.perform(get("/api/cases")
                             .param("page", "0")
-                            .param("size", "20"))
+                            .param("size", "20")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
                     .andExpect(jsonPath("$.totalElements").exists());
@@ -97,7 +97,8 @@ class CaseControllerTest {
         @DisplayName("상태 필터로 케이스 조회")
         void shouldFilterByStatus() throws Exception {
             mockMvc.perform(get("/api/cases")
-                            .param("status", "OPEN"))
+                            .param("status", "OPEN")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -106,7 +107,8 @@ class CaseControllerTest {
         @DisplayName("우선순위 필터로 케이스 조회")
         void shouldFilterByPriority() throws Exception {
             mockMvc.perform(get("/api/cases")
-                            .param("priority", "HIGH"))
+                            .param("priority", "HIGH")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
@@ -119,7 +121,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("열린 케이스 조회 성공")
         void shouldGetOpenCases() throws Exception {
-            mockMvc.perform(get("/api/cases/open"))
+            mockMvc.perform(get("/api/cases/open")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
                     .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))));
@@ -133,7 +136,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("ID로 케이스 조회 성공")
         void shouldGetCaseById() throws Exception {
-            mockMvc.perform(get("/api/cases/" + testCase.getId()))
+            mockMvc.perform(get("/api/cases/" + testCase.getId())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(testCase.getId()))
                     .andExpect(jsonPath("$.caseReference").value(testCase.getCaseReference()))
@@ -144,7 +148,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("존재하지 않는 케이스 조회 시 404")
         void shouldReturn404WhenNotFound() throws Exception {
-            mockMvc.perform(get("/api/cases/999999"))
+            mockMvc.perform(get("/api/cases/999999")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -163,7 +168,8 @@ class CaseControllerTest {
 
             mockMvc.perform(put("/api/cases/" + testCase.getId() + "/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
         }
@@ -178,7 +184,8 @@ class CaseControllerTest {
 
             mockMvc.perform(put("/api/cases/999999/status")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -197,7 +204,8 @@ class CaseControllerTest {
 
             mockMvc.perform(put("/api/cases/" + testCase.getId() + "/assign")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.assignedTo").value("analyst02"));
         }
@@ -218,7 +226,8 @@ class CaseControllerTest {
 
             mockMvc.perform(post("/api/cases/" + testCase.getId() + "/decision")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.decision").value("TRUE_POSITIVE"))
                     .andExpect(jsonPath("$.status").value("CLOSED"));
@@ -234,7 +243,8 @@ class CaseControllerTest {
 
             mockMvc.perform(post("/api/cases/" + testCase.getId() + "/decision")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isBadRequest());
         }
 
@@ -249,7 +259,8 @@ class CaseControllerTest {
 
             mockMvc.perform(post("/api/cases/" + testCase.getId() + "/decision")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isBadRequest());
         }
 
@@ -264,7 +275,8 @@ class CaseControllerTest {
 
             mockMvc.perform(post("/api/cases/999999/decision")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isNotFound());
         }
     }
@@ -284,7 +296,8 @@ class CaseControllerTest {
 
             mockMvc.perform(post("/api/cases/" + testCase.getId() + "/comments")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.content").value("Investigation notes for this case"))
                     .andExpect(jsonPath("$.commentType").value("ANALYSIS"));
@@ -293,7 +306,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("코멘트 목록 조회 성공")
         void shouldGetComments() throws Exception {
-            mockMvc.perform(get("/api/cases/" + testCase.getId() + "/comments"))
+            mockMvc.perform(get("/api/cases/" + testCase.getId() + "/comments")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray());
         }
@@ -306,7 +320,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("활동 로그 조회 성공")
         void shouldGetActivities() throws Exception {
-            mockMvc.perform(get("/api/cases/" + testCase.getId() + "/activities"))
+            mockMvc.perform(get("/api/cases/" + testCase.getId() + "/activities")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))));
@@ -320,7 +335,8 @@ class CaseControllerTest {
         @Test
         @DisplayName("통계 조회 성공")
         void shouldGetStatistics() throws Exception {
-            mockMvc.perform(get("/api/cases/stats"))
+            mockMvc.perform(get("/api/cases/stats")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalCases").exists())
                     .andExpect(jsonPath("$.openCases").exists());

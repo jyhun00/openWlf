@@ -79,21 +79,21 @@ public class AuditWatchlistChangeLogEntity {
      * 이전 데이터
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "old_data", columnDefinition = "jsonb")
+    @Column(name = "old_data")
     private Map<String, Object> oldData;
 
     /**
      * 새 데이터
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "new_data", columnDefinition = "jsonb")
+    @Column(name = "new_data")
     private Map<String, Object> newData;
 
     /**
      * 변경된 필드 목록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "changed_fields", columnDefinition = "jsonb")
+    @Column(name = "changed_fields")
     private List<String> changedFields;
 
     // ===== 변경 사유 =====
@@ -147,6 +147,6 @@ public class AuditWatchlistChangeLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

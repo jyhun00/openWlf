@@ -123,21 +123,21 @@ public class AuditFilteringLogEntity {
      * 상세 규칙 정보
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "matched_rules", columnDefinition = "jsonb")
+    @Column(name = "matched_rules")
     private List<Map<String, Object>> matchedRules;
 
     /**
      * 매칭된 감시목록 항목 ID
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "matched_watchlist_entries", columnDefinition = "jsonb")
+    @Column(name = "matched_watchlist_entries")
     private List<Long> matchedWatchlistEntries;
 
     /**
      * 점수 상세 분석
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "score_breakdown", columnDefinition = "jsonb")
+    @Column(name = "score_breakdown")
     private Map<String, Object> scoreBreakdown;
 
     // ===== 처리 정보 =====
@@ -189,6 +189,6 @@ public class AuditFilteringLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

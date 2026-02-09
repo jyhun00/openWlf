@@ -132,6 +132,6 @@ public class AuditAuthenticationLogEntity {
      * 추가 정보 (MFA 방식 등)
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

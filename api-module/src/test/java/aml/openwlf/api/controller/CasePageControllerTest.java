@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +20,7 @@ import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("CasePageController 통합 테스트")
-@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class CasePageControllerTest {
 
     @Autowired
@@ -76,7 +75,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("목록 페이지 정상 렌더링")
         void shouldRenderListPage() throws Exception {
-            mockMvc.perform(get("/cases"))
+            mockMvc.perform(get("/cases")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("case/list"))
                     .andExpect(model().attributeExists("cases", "statuses", "priorities"))
@@ -86,7 +86,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("목록에 케이스 데이터 표시")
         void shouldShowCaseData() throws Exception {
-            mockMvc.perform(get("/cases"))
+            mockMvc.perform(get("/cases")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString(testCase.getCaseReference())))
                     .andExpect(content().string(containsString("Test Customer")));
@@ -95,7 +96,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("상태 필터 적용")
         void shouldFilterByStatus() throws Exception {
-            mockMvc.perform(get("/cases").param("status", "OPEN"))
+            mockMvc.perform(get("/cases").param("status", "OPEN")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("case/list"))
                     .andExpect(model().attribute("selectedStatus", "OPEN"));
@@ -104,7 +106,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("우선순위 필터 적용")
         void shouldFilterByPriority() throws Exception {
-            mockMvc.perform(get("/cases").param("priority", "HIGH"))
+            mockMvc.perform(get("/cases").param("priority", "HIGH")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("case/list"))
                     .andExpect(model().attribute("selectedPriority", "HIGH"));
@@ -113,7 +116,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("빈 결과 처리")
         void shouldHandleEmptyResult() throws Exception {
-            mockMvc.perform(get("/cases").param("status", "CLOSED"))
+            mockMvc.perform(get("/cases").param("status", "CLOSED")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("해당 조건에 맞는 케이스가 없습니다")));
         }
@@ -126,7 +130,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("상세 페이지 정상 렌더링")
         void shouldRenderDetailPage() throws Exception {
-            mockMvc.perform(get("/cases/" + testCase.getId()))
+            mockMvc.perform(get("/cases/" + testCase.getId())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("case/detail"))
                     .andExpect(model().attributeExists("caseEntity", "linkedAlerts", "comments", "activities", "decisions"))
@@ -136,7 +141,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("상세 페이지에 케이스 정보 표시")
         void shouldShowCaseInfo() throws Exception {
-            mockMvc.perform(get("/cases/" + testCase.getId()))
+            mockMvc.perform(get("/cases/" + testCase.getId())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString(testCase.getCaseReference())))
                     .andExpect(content().string(containsString("Test Customer")))
@@ -146,7 +152,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("결정 폼 표시 (미결정 케이스)")
         void shouldShowDecisionForm() throws Exception {
-            mockMvc.perform(get("/cases/" + testCase.getId()))
+            mockMvc.perform(get("/cases/" + testCase.getId())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("TRUE_POSITIVE")))
                     .andExpect(content().string(containsString("FALSE_POSITIVE")))
@@ -156,7 +163,8 @@ class CasePageControllerTest {
         @Test
         @DisplayName("존재하지 않는 케이스 조회 시 에러")
         void shouldReturn400WhenCaseNotFound() throws Exception {
-            mockMvc.perform(get("/cases/999999"))
+            mockMvc.perform(get("/cases/999999")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().is4xxClientError());
         }
     }
@@ -170,6 +178,7 @@ class CasePageControllerTest {
         void shouldRedirectOnSuccess() throws Exception {
             mockMvc.perform(post("/cases/" + testCase.getId() + "/decision")
                             .with(csrf())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")))
                             .param("decision", "TRUE_POSITIVE")
                             .param("rationale", "Confirmed sanctions match with high confidence"))
                     .andExpect(status().is3xxRedirection())
@@ -181,6 +190,7 @@ class CasePageControllerTest {
         void shouldRedirectBackWhenRationaleTooShort() throws Exception {
             mockMvc.perform(post("/cases/" + testCase.getId() + "/decision")
                             .with(csrf())
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")))
                             .param("decision", "TRUE_POSITIVE")
                             .param("rationale", "Short"))
                     .andExpect(status().is3xxRedirection())
@@ -199,7 +209,8 @@ class CasePageControllerTest {
             caseService.makeDecision(testCase.getId(), CaseDecision.TRUE_POSITIVE,
                     "Confirmed match", "analyst01");
 
-            mockMvc.perform(get("/cases/" + testCase.getId() + "/decision/result"))
+            mockMvc.perform(get("/cases/" + testCase.getId() + "/decision/result")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("case/decision-result"))
                     .andExpect(model().attributeExists("caseEntity"))
@@ -213,7 +224,8 @@ class CasePageControllerTest {
             caseService.makeDecision(testCase.getId(), CaseDecision.FALSE_POSITIVE,
                     "False positive - different person", "analyst01");
 
-            mockMvc.perform(get("/cases/" + testCase.getId() + "/decision/result"))
+            mockMvc.perform(get("/cases/" + testCase.getId() + "/decision/result")
+                            .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString(testCase.getCaseReference())))
                     .andExpect(content().string(containsString("Test Customer")))

@@ -93,14 +93,14 @@ public class AuditCaseLogEntity {
      * 관련 Alert ID 목록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "related_alert_ids", columnDefinition = "jsonb")
+    @Column(name = "related_alert_ids")
     private List<Long> relatedAlertIds;
 
     /**
      * 관련 문서 ID 목록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "related_document_ids", columnDefinition = "jsonb")
+    @Column(name = "related_document_ids")
     private List<Long> relatedDocumentIds;
 
     // ===== 고객 정보 =====
@@ -167,6 +167,6 @@ public class AuditCaseLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

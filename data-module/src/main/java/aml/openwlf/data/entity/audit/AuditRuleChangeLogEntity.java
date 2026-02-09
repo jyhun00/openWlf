@@ -78,21 +78,21 @@ public class AuditRuleChangeLogEntity {
      * 이전 설정 (전체)
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "old_config", columnDefinition = "jsonb")
+    @Column(name = "old_config")
     private Map<String, Object> oldConfig;
 
     /**
      * 새 설정 (전체)
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "new_config", columnDefinition = "jsonb")
+    @Column(name = "new_config")
     private Map<String, Object> newConfig;
 
     /**
      * 변경된 필드 목록
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "changed_fields", columnDefinition = "jsonb")
+    @Column(name = "changed_fields")
     private List<String> changedFields;
 
     // ===== 변경 사유 =====
@@ -156,6 +156,6 @@ public class AuditRuleChangeLogEntity {
     // ===== 메타데이터 =====
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }

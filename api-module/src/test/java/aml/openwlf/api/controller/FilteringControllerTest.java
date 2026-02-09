@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 import java.time.LocalDate;
 
@@ -18,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class FilteringControllerTest {
 
     @Autowired
@@ -29,7 +29,8 @@ class FilteringControllerTest {
 
     @Test
     void testHealthCheck() throws Exception {
-        mockMvc.perform(get("/api/filter/health"))
+        mockMvc.perform(get("/api/filter/health")
+                        .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Watchlist Filtering Service is operational"));
     }
@@ -45,7 +46,8 @@ class FilteringControllerTest {
 
         mockMvc.perform(post("/api/filter/customer")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.alert").value(false))
                 .andExpect(jsonPath("$.score").exists())
@@ -63,7 +65,8 @@ class FilteringControllerTest {
 
         mockMvc.perform(post("/api/filter/customer")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.score").exists())
                 .andExpect(jsonPath("$.matchedRules").isArray())
@@ -78,7 +81,8 @@ class FilteringControllerTest {
 
         mockMvc.perform(post("/api/filter/customer")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(user("admin").authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isBadRequest());
     }
 }

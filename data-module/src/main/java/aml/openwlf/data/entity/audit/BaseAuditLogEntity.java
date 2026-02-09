@@ -59,6 +59,6 @@ public abstract class BaseAuditLogEntity {
      * 추가 메타데이터 (JSON)
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata")
     private Map<String, Object> metadata;
 }
