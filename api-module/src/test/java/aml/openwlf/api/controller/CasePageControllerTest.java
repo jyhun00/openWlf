@@ -13,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("CasePageController 통합 테스트")
+@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class CasePageControllerTest {
 
     @Autowired
@@ -166,9 +169,9 @@ class CasePageControllerTest {
         @DisplayName("결정 제출 성공 시 redirect")
         void shouldRedirectOnSuccess() throws Exception {
             mockMvc.perform(post("/cases/" + testCase.getId() + "/decision")
+                            .with(csrf())
                             .param("decision", "TRUE_POSITIVE")
-                            .param("rationale", "Confirmed sanctions match with high confidence")
-                            .param("decidedBy", "analyst01"))
+                            .param("rationale", "Confirmed sanctions match with high confidence"))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/cases/" + testCase.getId() + "/decision/result"));
         }
@@ -177,21 +180,9 @@ class CasePageControllerTest {
         @DisplayName("사유 10자 미만 시 redirect back with error")
         void shouldRedirectBackWhenRationaleTooShort() throws Exception {
             mockMvc.perform(post("/cases/" + testCase.getId() + "/decision")
+                            .with(csrf())
                             .param("decision", "TRUE_POSITIVE")
-                            .param("rationale", "Short")
-                            .param("decidedBy", "analyst01"))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/cases/" + testCase.getId()))
-                    .andExpect(flash().attributeExists("error"));
-        }
-
-        @Test
-        @DisplayName("결정자 미입력 시 redirect back with error")
-        void shouldRedirectBackWhenDecidedByEmpty() throws Exception {
-            mockMvc.perform(post("/cases/" + testCase.getId() + "/decision")
-                            .param("decision", "TRUE_POSITIVE")
-                            .param("rationale", "Confirmed match with high confidence")
-                            .param("decidedBy", ""))
+                            .param("rationale", "Short"))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/cases/" + testCase.getId()))
                     .andExpect(flash().attributeExists("error"));
@@ -205,7 +196,6 @@ class CasePageControllerTest {
         @Test
         @DisplayName("결정 결과 페이지 정상 렌더링")
         void shouldRenderResultPage() throws Exception {
-            // First make a decision
             caseService.makeDecision(testCase.getId(), CaseDecision.TRUE_POSITIVE,
                     "Confirmed match", "analyst01");
 

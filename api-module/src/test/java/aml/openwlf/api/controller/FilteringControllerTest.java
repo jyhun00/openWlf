@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -17,24 +18,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "admin", authorities = "ROLE_ADMIN")
 class FilteringControllerTest {
-    
+
     @Autowired
     private MockMvc mockMvc;
-    
+
     @Autowired
     private ObjectMapper objectMapper;
-    
+
     @Test
     void testHealthCheck() throws Exception {
         mockMvc.perform(get("/api/filter/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Watchlist Filtering Service is operational"));
     }
-    
+
     @Test
     void testFilterCustomer_NoMatch() throws Exception {
-        // Use a completely unique name that won't match any watchlist entry
         CustomerFilterRequest request = CustomerFilterRequest.builder()
                 .name("Xyzabc Qwerty Testname")
                 .dateOfBirth(LocalDate.of(1990, 1, 1))
@@ -50,7 +51,7 @@ class FilteringControllerTest {
                 .andExpect(jsonPath("$.score").exists())
                 .andExpect(jsonPath("$.explanation").exists());
     }
-    
+
     @Test
     void testFilterCustomer_Match() throws Exception {
         CustomerFilterRequest request = CustomerFilterRequest.builder()
@@ -59,7 +60,7 @@ class FilteringControllerTest {
                 .nationality("US")
                 .customerId("TEST-002")
                 .build();
-        
+
         mockMvc.perform(post("/api/filter/customer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -68,13 +69,13 @@ class FilteringControllerTest {
                 .andExpect(jsonPath("$.matchedRules").isArray())
                 .andExpect(jsonPath("$.explanation").exists());
     }
-    
+
     @Test
     void testFilterCustomer_InvalidRequest() throws Exception {
         CustomerFilterRequest request = CustomerFilterRequest.builder()
-                .name("") // Empty name
+                .name("")
                 .build();
-        
+
         mockMvc.perform(post("/api/filter/customer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

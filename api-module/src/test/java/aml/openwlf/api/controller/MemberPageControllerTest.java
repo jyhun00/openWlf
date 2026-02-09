@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("MemberPageController 통합 테스트")
+@WithMockUser(username = "analyst1", authorities = "ROLE_ANALYST")
 class MemberPageControllerTest {
 
     @Autowired
@@ -45,6 +48,7 @@ class MemberPageControllerTest {
         @DisplayName("정상 회원가입 시 결과 페이지 렌더링")
         void shouldShowResultOnValidSubmission() throws Exception {
             mockMvc.perform(post("/member/register")
+                            .with(csrf())
                             .param("name", "홍길동")
                             .param("dateOfBirth", "1990-01-15")
                             .param("nationality", "KR"))
@@ -58,6 +62,7 @@ class MemberPageControllerTest {
         @DisplayName("이름이 watchlist에 매칭되면 높은 점수 반환")
         void shouldReturnHighScoreForWatchlistMatch() throws Exception {
             mockMvc.perform(post("/member/register")
+                            .with(csrf())
                             .param("name", "Kim Jong Un")
                             .param("dateOfBirth", "1984-01-08")
                             .param("nationality", "KP"))
@@ -70,6 +75,7 @@ class MemberPageControllerTest {
         @DisplayName("이름 미입력 시 폼 페이지로 복귀")
         void shouldReturnToFormWhenNameEmpty() throws Exception {
             mockMvc.perform(post("/member/register")
+                            .with(csrf())
                             .param("name", ""))
                     .andExpect(status().isOk())
                     .andExpect(view().name("member/register"));
@@ -79,6 +85,7 @@ class MemberPageControllerTest {
         @DisplayName("위험도 낮은 이름은 가입 승인")
         void shouldApproveRegistrationForSafeName() throws Exception {
             mockMvc.perform(post("/member/register")
+                            .with(csrf())
                             .param("name", "이영희")
                             .param("nationality", "KR"))
                     .andExpect(status().isOk())

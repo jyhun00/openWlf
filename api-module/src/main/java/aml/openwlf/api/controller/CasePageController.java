@@ -6,11 +6,13 @@ import aml.openwlf.data.entity.CaseCommentEntity;
 import aml.openwlf.data.entity.CaseEntity;
 import aml.openwlf.data.entity.CaseEntity.*;
 import aml.openwlf.data.service.CaseService;
+import aml.openwlf.api.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -91,7 +93,7 @@ public class CasePageController {
             @PathVariable Long id,
             @RequestParam String decision,
             @RequestParam String rationale,
-            @RequestParam String decidedBy,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
 
         if (rationale == null || rationale.trim().length() < 10) {
@@ -99,14 +101,11 @@ public class CasePageController {
             return "redirect:/cases/" + id;
         }
 
-        if (decidedBy == null || decidedBy.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "결정자 정보는 필수입니다.");
-            return "redirect:/cases/" + id;
-        }
+        String decidedBy = userDetails != null ? userDetails.getUsername() : "unknown";
 
         try {
             CaseDecision caseDecision = CaseDecision.valueOf(decision);
-            caseService.makeDecision(id, caseDecision, rationale.trim(), decidedBy.trim())
+            caseService.makeDecision(id, caseDecision, rationale.trim(), decidedBy)
                     .orElseThrow(() -> new IllegalArgumentException("Case not found: " + id));
 
             log.info("Decision submitted for case {}: {} by {}", id, decision, decidedBy);

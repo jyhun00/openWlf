@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - OpenWLF</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .logo p {
+            color: #888;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .error-msg {
+            background: #fff5f5;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .success-msg {
+            background: #f0fff4;
+            border: 1px solid #27ae60;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #27ae60;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .dev-info {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 12px;
+            color: #666;
+        }
+        .dev-info h3 {
+            font-size: 13px;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        .dev-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .dev-info td {
+            padding: 3px 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .dev-info td:first-child {
+            font-weight: 600;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>OpenWLF</h1>
+            <p>AML Watchlist Filtering System</p>
+        </div>
+
+        <div class="error-msg" th:if="${param.error}">
+            사용자명 또는 비밀번호가 올바르지 않습니다.
+        </div>
+
+        <div class="success-msg" th:if="${param.logout}">
+            로그아웃되었습니다.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="username">사용자명</label>
+                <input type="text" id="username" name="username" placeholder="사용자명을 입력하세요" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+            </div>
+
+            <button type="submit" class="btn-login">로그인</button>
+        </form>
+
+        <div class="dev-info">
+            <h3>테스트 계정 (개발 환경)</h3>
+            <table>
+                <tr><td>admin</td><td>admin123</td><td>ADMIN</td></tr>
+                <tr><td>manager1</td><td>manager123</td><td>MANAGER</td></tr>
+                <tr><td>analyst1</td><td>analyst123</td><td>ANALYST</td></tr>
+                <tr><td>analyst2</td><td>analyst123</td><td>ANALYST</td></tr>
+                <tr><td>viewer1</td><td>viewer123</td><td>VIEWER</td></tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

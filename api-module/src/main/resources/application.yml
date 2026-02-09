@@ -1,6 +1,8 @@
 spring:
   application:
     name: openWLF
+  profiles:
+    active: dev
 
   datasource:
     url: jdbc:h2:mem:watchlistdb
@@ -34,6 +36,13 @@ spring:
 
 server:
   port: 8080
+
+# JWT Configuration
+jwt:
+  secret: openWLF-jwt-secret-key-for-development-must-be-at-least-256-bits-long-change-in-production
+  access-token-expiration-ms: 3600000
+  refresh-token-expiration-ms: 86400000
+  issuer: openWLF
 
 # Matching algorithm weights configuration
 matching:
@@ -89,8 +98,10 @@ logging:
   level:
     aml.openwlf: DEBUG
     aml.openwlf.api.scheduler: INFO
+    aml.openwlf.api.security: DEBUG
     aml.openwlf.batch: INFO
     org.springframework.web: INFO
+    org.springframework.security: INFO
     org.springframework.scheduling: INFO
     org.hibernate: INFO
 
