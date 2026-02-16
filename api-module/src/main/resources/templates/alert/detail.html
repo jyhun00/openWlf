@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert 상세 - Alert Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .info-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .info-item.full-width {
+            grid-column: 1 / -1;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .badge-new { background: #3498db; }
+        .badge-in_review { background: #e67e22; }
+        .badge-escalated { background: #e74c3c; }
+        .badge-confirmed { background: #e74c3c; }
+        .badge-false_positive { background: #27ae60; }
+        .badge-closed { background: #95a5a6; }
+
+        /* Score */
+        .score-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .score-label { font-size: 14px; color: #666; font-weight: 500; }
+        .score-value { font-size: 32px; font-weight: 700; }
+        .score-low { color: #27ae60; }
+        .score-medium { color: #f39c12; }
+        .score-high { color: #e74c3c; }
+        .score-bar { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 5px; }
+        .score-fill.low { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+        .score-fill.medium { background: linear-gradient(90deg, #f39c12, #e67e22); }
+        .score-fill.high { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+
+        /* List */
+        .list-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .list-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .list-item-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+        .list-item-meta {
+            font-size: 12px;
+            color: #888;
+        }
+        .list-item-body {
+            font-size: 13px;
+            color: #555;
+        }
+        .empty-list {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Forms */
+        .action-form {
+            background: #f0f0ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .action-form .form-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 15px;
+        }
+        .action-form .form-group {
+            margin-bottom: 15px;
+        }
+        .action-form label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        .action-form select, .action-form input[type="text"], .action-form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .action-form select:focus, .action-form input:focus, .action-form textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .action-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Resolution Info */
+        .resolution-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: #e0e0e0;
+            color: #333;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        /* Error */
+        .error-msg {
+            background: #fff5f5;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* Linked case */
+        .linked-case {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .linked-case:hover { opacity: 0.9; }
+
+        .user-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .user-bar a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .form-row .form-group { flex: 1; margin-bottom: 0; }
+        .form-row .btn { align-self: flex-end; }
+
+        /* Rules tag */
+        .rule-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e8eaf6;
+            color: #3949ab;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-bar" sec:authorize="isAuthenticated()">
+            <span><span sec:authentication="name">user</span> (<span sec:authentication="principal.authorities[0]">ROLE</span>)</span>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+        <h1>Alert 상세</h1>
+
+        <!-- Error Message -->
+        <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Basic Info -->
+        <div class="section">
+            <div class="section-title">기본 정보</div>
+            <div class="info-grid three-col">
+                <div class="info-item">
+                    <div class="info-label">참조번호</div>
+                    <div class="info-value" style="font-family: monospace;" th:text="${alert.alertReference}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">고객명</div>
+                    <div class="info-value" th:text="${alert.customerName}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">고객 ID</div>
+                    <div class="info-value" style="font-family: monospace;" th:text="${alert.customerId}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">생년월일</div>
+                    <div class="info-value" th:text="${alert.dateOfBirth != null} ? ${alert.dateOfBirth} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">국적</div>
+                    <div class="info-value" th:text="${alert.nationality != null} ? ${alert.nationality} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">상태</div>
+                    <div class="info-value">
+                        <span class="badge"
+                              th:classappend="'badge-' + ${alert.status.name().toLowerCase()}"
+                              th:text="${alert.status.name()}"></span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">담당자</div>
+                    <div class="info-value" th:text="${alert.assignedTo != null} ? ${alert.assignedTo} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">생성일</div>
+                    <div class="info-value" th:text="${alert.createdAt != null} ? ${#temporals.format(alert.createdAt, 'yyyy-MM-dd HH:mm')} : '-'"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">수정일</div>
+                    <div class="info-value" th:text="${alert.updatedAt != null} ? ${#temporals.format(alert.updatedAt, 'yyyy-MM-dd HH:mm')} : '-'"></div>
+                </div>
+                <div class="info-item full-width" th:if="${alert.explanation != null}">
+                    <div class="info-label">설명</div>
+                    <div class="info-value" th:text="${alert.explanation}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Score -->
+        <div class="score-section">
+            <div class="score-header">
+                <span class="score-label">위험 점수 (Risk Score)</span>
+                <span class="score-value"
+                      th:classappend="${alert.score >= 70} ? 'score-high' : (${alert.score >= 30} ? 'score-medium' : 'score-low')"
+                      th:text="${#numbers.formatDecimal(alert.score, 1, 1)}"></span>
+            </div>
+            <div class="score-bar">
+                <div class="score-fill"
+                     th:classappend="${alert.score >= 70} ? 'high' : (${alert.score >= 30} ? 'medium' : 'low')"
+                     th:style="'width: ' + ${alert.score} + '%'"></div>
+            </div>
+        </div>
+
+        <!-- Matched Rules -->
+        <div class="section">
+            <div class="section-title">매칭된 규칙</div>
+            <div th:if="${alert.matchedRules != null and !alert.matchedRules.isEmpty()}">
+                <span th:each="rule : ${alert.matchedRules.split(',')}" class="rule-tag" th:text="${rule.trim()}"></span>
+            </div>
+            <div th:if="${alert.matchedRules == null or alert.matchedRules.isEmpty()}" class="empty-list">
+                매칭된 규칙 정보가 없습니다.
+            </div>
+        </div>
+
+        <!-- Linked Case -->
+        <div class="section">
+            <div class="section-title">연결된 케이스</div>
+            <div th:if="${linkedCaseId != null}">
+                <a th:href="@{/cases/{id}(id=${linkedCaseId})}" class="linked-case"
+                   th:text="'케이스 #' + ${linkedCaseId} + ' 상세 보기'"></a>
+            </div>
+            <div th:if="${linkedCaseId == null}" class="empty-list">연결된 케이스가 없습니다.</div>
+        </div>
+
+        <!-- Resolution Info (if resolved) -->
+        <div class="section" th:if="${alert.resolvedBy != null}">
+            <div class="section-title">해결 정보</div>
+            <div class="resolution-info">
+                <div class="info-grid three-col">
+                    <div class="info-item">
+                        <div class="info-label">해결자</div>
+                        <div class="info-value" th:text="${alert.resolvedBy}"></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">해결일</div>
+                        <div class="info-value" th:text="${alert.resolvedAt != null} ? ${#temporals.format(alert.resolvedAt, 'yyyy-MM-dd HH:mm')} : '-'"></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">해결 코멘트</div>
+                        <div class="info-value" th:text="${alert.resolutionComment != null} ? ${alert.resolutionComment} : '-'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Change Form -->
+        <div class="section">
+            <div class="section-title">상태 변경</div>
+            <form class="action-form" method="post" th:action="@{/alerts/{id}/status(id=${alert.id})}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="status">새 상태</label>
+                        <select id="status" name="status" required>
+                            <option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.name()}"
+                                    th:selected="${s == alert.status}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">코멘트 (선택)</label>
+                        <input type="text" id="comment" name="comment" placeholder="상태 변경 사유">
+                    </div>
+                    <button type="submit" class="btn btn-primary">변경</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Assign Form -->
+        <div class="section">
+            <div class="section-title">담당자 배정</div>
+            <form class="action-form" method="post" th:action="@{/alerts/{id}/assign(id=${alert.id})}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assignedTo">담당자</label>
+                        <input type="text" id="assignedTo" name="assignedTo" placeholder="담당자 이름 입력"
+                               th:value="${alert.assignedTo}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">배정</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Navigation -->
+        <div class="btn-group">
+            <a th:href="@{/alerts}" class="btn-secondary">목록으로</a>
+            <a href="/" class="btn-secondary">홈으로</a>
+        </div>
+    </div>
+</body>
+</html>

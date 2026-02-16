@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert 목록 - Alert Management</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* Filters */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+        .filter-bar select, .filter-bar input[type="text"], .filter-bar input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .filter-bar input[type="number"] { width: 100px; }
+        .filter-bar input[type="text"] { width: 140px; }
+        .filter-bar .btn-filter {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .filter-bar .btn-reset {
+            padding: 8px 20px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Table */
+        .alert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .alert-table thead th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+        }
+        .alert-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .alert-table tbody tr:hover {
+            background: #f0f0ff;
+        }
+        .alert-table tbody td {
+            padding: 12px 10px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .badge-new { background: #3498db; }
+        .badge-in_review { background: #e67e22; }
+        .badge-escalated { background: #e74c3c; }
+        .badge-confirmed { background: #e74c3c; }
+        .badge-false_positive { background: #27ae60; }
+        .badge-closed { background: #95a5a6; }
+
+        /* Score */
+        .score {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .score-low { color: #27ae60; }
+        .score-medium { color: #f39c12; }
+        .score-high { color: #e74c3c; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .pagination a {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+        }
+        .pagination .active {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .home-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 10px;
+        }
+        .user-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .user-bar a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-bar" sec:authorize="isAuthenticated()">
+            <span><span sec:authentication="name">user</span> (<span sec:authentication="principal.authorities[0]">ROLE</span>)</span>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+        <h1>Alert 목록</h1>
+
+        <!-- Filter Bar -->
+        <form class="filter-bar" method="get" th:action="@{/alerts}">
+            <label for="status">상태:</label>
+            <select id="status" name="status">
+                <option value="">전체</option>
+                <option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.name()}"
+                        th:selected="${selectedStatus != null and selectedStatus == s.name()}"></option>
+            </select>
+
+            <label for="customerId">고객ID:</label>
+            <input type="text" id="customerId" name="customerId" placeholder="고객 ID"
+                   th:value="${selectedCustomerId}">
+
+            <label for="minScore">최소 점수:</label>
+            <input type="number" id="minScore" name="minScore" placeholder="0" step="0.1" min="0" max="100"
+                   th:value="${selectedMinScore}">
+
+            <button type="submit" class="btn-filter">필터 적용</button>
+            <a th:href="@{/alerts}" class="btn-reset">초기화</a>
+        </form>
+
+        <!-- Alerts Table -->
+        <div th:if="${alerts.totalElements > 0}">
+            <table class="alert-table">
+                <thead>
+                    <tr>
+                        <th>참조번호</th>
+                        <th>고객명</th>
+                        <th>국적</th>
+                        <th>점수</th>
+                        <th>상태</th>
+                        <th>담당자</th>
+                        <th>생성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="a : ${alerts.content}"
+                        th:onclick="'window.location.href=\'/alerts/' + ${a.id} + '\''">
+                        <td th:text="${a.alertReference}" style="font-family: monospace; font-weight: 600;"></td>
+                        <td th:text="${a.customerName}"></td>
+                        <td th:text="${a.nationality != null} ? ${a.nationality} : '-'"></td>
+                        <td>
+                            <span class="score"
+                                  th:classappend="${a.score >= 70} ? 'score-high' : (${a.score >= 30} ? 'score-medium' : 'score-low')"
+                                  th:text="${#numbers.formatDecimal(a.score, 1, 1)}"></span>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="'badge-' + ${a.status.name().toLowerCase()}"
+                                  th:text="${a.status.name()}"></span>
+                        </td>
+                        <td th:text="${a.assignedTo != null} ? ${a.assignedTo} : '-'"></td>
+                        <td th:text="${a.createdAt != null} ? ${#temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm')} : '-'"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination" th:if="${alerts.totalPages > 1}">
+                <a th:if="${alerts.number > 0}"
+                   th:href="@{/alerts(page=${alerts.number - 1}, size=${alerts.size}, status=${selectedStatus}, customerId=${selectedCustomerId}, minScore=${selectedMinScore})}">이전</a>
+                <th:block th:each="i : ${#numbers.sequence(0, alerts.totalPages - 1)}">
+                    <span th:if="${i == alerts.number}" class="active" th:text="${i + 1}"></span>
+                    <a th:unless="${i == alerts.number}"
+                       th:href="@{/alerts(page=${i}, size=${alerts.size}, status=${selectedStatus}, customerId=${selectedCustomerId}, minScore=${selectedMinScore})}"
+                       th:text="${i + 1}"></a>
+                </th:block>
+                <a th:if="${alerts.number < alerts.totalPages - 1}"
+                   th:href="@{/alerts(page=${alerts.number + 1}, size=${alerts.size}, status=${selectedStatus}, customerId=${selectedCustomerId}, minScore=${selectedMinScore})}">다음</a>
+            </div>
+        </div>
+
+        <div th:if="${alerts.totalElements == 0}" class="empty-state">
+            해당 조건에 맞는 Alert가 없습니다.
+        </div>
+
+        <div class="home-link">
+            <a th:href="@{/cases}">케이스 목록</a>
+            <a href="/">홈으로</a>
+        </div>
+    </div>
+</body>
+</html>

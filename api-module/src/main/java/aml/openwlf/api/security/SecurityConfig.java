@@ -100,8 +100,9 @@ public class SecurityConfig {
                         // Member pages - not VIEWER
                         .requestMatchers("/member/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_ANALYST")
 
-                        // Case pages - all authenticated
+                        // Case & Alert pages - all authenticated
                         .requestMatchers("/cases/**").authenticated()
+                        .requestMatchers("/alerts/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
