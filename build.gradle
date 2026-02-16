@@ -30,7 +30,8 @@ sourceSets {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'io.spring.dependency-management'
-    
+    apply plugin: 'jacoco'
+
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
@@ -66,5 +67,31 @@ subprojects {
 
     tasks.named('test') {
         useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        reports {
+            html.required = true
+            xml.required = true
+        }
+    }
+}
+
+tasks.register('jacocoRootReport', JacocoReport) {
+    dependsOn subprojects*.tasks*.named('test')
+
+    additionalSourceDirs.setFrom(subprojects.collect { it.sourceSets.main.allSource })
+    sourceDirectories.setFrom(subprojects.collect { it.sourceSets.main.allSource })
+    classDirectories.setFrom(subprojects.collect { it.sourceSets.main.output })
+    executionData.setFrom(subprojects.collect {
+        it.tasks.named('test').map { t -> t.extensions.getByType(JacocoTaskExtension).destinationFile }
+    })
+
+    reports {
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/aggregate/html')
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file('reports/jacoco/aggregate/jacocoRootReport.xml')
     }
 }
